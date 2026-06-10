@@ -2,9 +2,9 @@ import database as db
 from gui import KioscoApp
 
 if __name__ == "__main__":
-    # Inicializa el entorno controlado del monitor
+    # Inicializa las tablas con la carga masiva de productos
     db.init_db()
     
-    # Inicia la ventana gráfica con Polling
+    # Arranca el bucle gráfico principal
     app = KioscoApp()
     app.mainloop()
