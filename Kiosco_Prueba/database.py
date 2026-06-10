@@ -5,13 +5,13 @@ import time
 
 DB_NAME = 'kiosco_avanzado.db'
 
-# 1. COLA CONCURRENTE (Recibe carritos completos: (username, orden_id, lista_items))
+# 1. COLA CONCURRENTE
 order_queue = queue.Queue()
 
-# 2. SEMÁFORO (Controla el acceso estricto a la E/S del disco duro)
+# 2. SEMÁFORO
 db_semaphore = threading.BoundedSemaphore(value=1)
 
-# 3. MONITOR (Garantiza la exclusión mutua en inventario y estados)
+# 3. MONITOR
 class KioscoMonitor:
     def __init__(self):
         self._lock = threading.Lock()
@@ -28,12 +28,10 @@ class KioscoMonitor:
                          (id INTEGER PRIMARY KEY AUTOINCREMENT, orden_id TEXT, username TEXT, producto_id INTEGER, 
                           nombre_producto TEXT, cantidad INTEGER, precio_unid REAL, estado TEXT, notificado INTEGER DEFAULT 0)''')
             
-            # Crear Administrador
             c.execute("SELECT * FROM usuarios WHERE username='admin'")
             if not c.fetchone():
                 c.execute("INSERT INTO usuarios (username, password, role) VALUES ('admin', '1234', 'admin')")
                 
-            # Carga Masiva de Productos con Precios Reales de Kiosco
             c.execute("SELECT COUNT(*) FROM productos")
             if c.fetchone()[0] == 0:
                 productos_semilla = [
@@ -81,17 +79,14 @@ class KioscoMonitor:
                 conn.close()
 
     def procesar_carrito_en_lote(self, username, orden_id, items_carrito):
-        """ Valida y descuenta todo el carrito de forma atómica en el Monitor """
         with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             
-            # Primera pasada: Validar stock de todos los productos solicitados
             for p_id, _, cant, _ in items_carrito:
                 c.execute("SELECT cantidad, nombre FROM productos WHERE id = ?", (p_id,))
                 row = c.fetchone()
                 if not row or row[0] < cant:
-                    # Si uno falla, la orden entera se registra inicialmente como Rechazada por falta de stock
                     for p_id_b, p_nom_b, cant_b, p_pre_b in items_carrito:
                         c.execute('''INSERT INTO pedidos (orden_id, username, producto_id, nombre_producto, cantidad, precio_unid, estado) 
                                      VALUES (?, ?, ?, ?, ?, ?, 'Rechazado')''', (orden_id, username, p_id_b, p_nom_b, cant_b, p_pre_b))
@@ -99,7 +94,6 @@ class KioscoMonitor:
                     conn.close()
                     return False
             
-            # Segunda pasada: Si todo está OK, se descuenta stock y se pone "En Proceso"
             for p_id, p_nom, cant, p_pre in items_carrito:
                 c.execute("UPDATE productos SET cantidad = cantidad - ? WHERE id = ?", (cant, p_id))
                 c.execute('''INSERT INTO pedidos (orden_id, username, producto_id, nombre_producto, cantidad, precio_unid, estado) 
@@ -110,7 +104,6 @@ class KioscoMonitor:
             return True
 
     def obtener_notificaciones_usuario(self, username):
-        """ Busca pedidos cuyos estados cambiaron y no han sido alertados al cliente """
         with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
@@ -146,12 +139,11 @@ class KioscoMonitor:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             
-            # Si el administrador decide rechazarlo de forma manual, devolvemos el stock consumido
             if nuevo_estado == "Rechazado":
                 c.execute("SELECT producto_id, cantidad, estado FROM pedidos WHERE orden_id=?", (orden_id,))
                 items = c.fetchall()
                 for prod_id, cant, est_ant in items:
-                    if est_ant != "Rechazado": # Evitar doble devolución
+                    if est_ant != "Rechazado":
                         c.execute("UPDATE productos SET cantidad = cantidad + ? WHERE id = ?", (cant, prod_id))
                         
             c.execute("UPDATE pedidos SET estado=?, notificado=0 WHERE orden_id=?", (nuevo_estado, orden_id))
@@ -168,7 +160,6 @@ class KioscoMonitor:
 
 monitor = KioscoMonitor()
 
-# TRABAJADOR DE FONDO (Worker Thread)
 def deamon_procesador_carritos():
     while True:
         pedido_completo = order_queue.get()
@@ -176,14 +167,13 @@ def deamon_procesador_carritos():
         username, orden_id, items_carrito = pedido_completo
         
         with db_semaphore:
-            time.sleep(0.5) # Simulación de procesamiento de pasarela de pago / empaque
+            time.sleep(0.5)
             monitor.procesar_carrito_en_lote(username, orden_id, items_carrito)
             
         order_queue.task_done()
 
 threading.Thread(target=deamon_procesador_carritos, daemon=True).start()
 
-# Puentes Públicos
 def init_db(): monitor.inicializar_tablas()
 def verificar_login(u, p): return monitor.verificar_login(u, p)
 def registrar_usuario(u, p): return monitor.registrar_usuario(u, p)
