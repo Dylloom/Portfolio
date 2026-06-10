@@ -239,13 +239,21 @@ class KioscoApp(tk.Tk):
     def refrescar_catalogo_cliente(self):
         if not self.tree_productos_cliente: 
             return
+        
+        # Guardamos el ID del producto que el usuario tenía seleccionado
+        id_seleccionado = None
         sel = self.tree_productos_cliente.selection()
+        if sel:
+            id_seleccionado = self.tree_productos_cliente.item(sel[0])['values'][0]
+
         for i in self.tree_productos_cliente.get_children(): 
             self.tree_productos_cliente.delete(i)
+            
         for r in db.obtener_productos():
-            self.tree_productos_cliente.insert("", "end", values=(r[0], r[1], f"${r[3]:.2f}", f"{r[2]} u.", r[4]))
-        if sel and self.tree_productos_cliente.exists(sel[0]): 
-            self.tree_productos_cliente.selection_set(sel[0])
+            nodo = self.tree_productos_cliente.insert("", "end", values=(r[0], r[1], f"${r[3]:.2f}", f"{r[2]} u.", r[4]))
+            # Si coincide con el ID que teníamos, lo volvemos a seleccionar de inmediato
+            if id_seleccionado is not None and int(r[0]) == int(id_seleccionado):
+                self.tree_productos_cliente.selection_set(nodo)
 
     def refrescar_tabla_carrito_local(self):
         for i in self.tree_carrito_cliente.get_children(): 
@@ -372,21 +380,33 @@ class KioscoApp(tk.Tk):
     def refrescar_pedidos_admin(self):
         if not self.tree_admin_pedidos: 
             return
+        
+        id_seleccionado = None
         sel = self.tree_admin_pedidos.selection()
+        if sel:
+            id_seleccionado = self.tree_admin_pedidos.item(sel[0])['values'][0]
+
         for i in self.tree_admin_pedidos.get_children(): 
             self.tree_admin_pedidos.delete(i)
+            
         for r in db.obtener_pedidos_agrupados():
-            self.tree_admin_pedidos.insert("", "end", values=r)
-        if sel and self.tree_admin_pedidos.exists(sel[0]): 
-            self.tree_admin_pedidos.selection_set(sel[0])
+            nodo = self.tree_admin_pedidos.insert("", "end", values=r)
+            if id_seleccionado is not None and int(r[0]) == int(id_seleccionado):
+                self.tree_admin_pedidos.selection_set(nodo)
 
     def refrescar_stock_admin(self):
         if not self.tree_admin_stock: 
             return
+        
+        id_seleccionado = None
         sel = self.tree_admin_stock.selection()
+        if sel:
+            id_seleccionado = self.tree_admin_stock.item(sel[0])['values'][0]
+
         for i in self.tree_admin_stock.get_children(): 
             self.tree_admin_stock.delete(i)
+            
         for r in db.obtener_productos():
-            self.tree_admin_stock.insert("", "end", values=(r[0], r[1], f"{r[2]} u.", f"${r[3]:.2f}", r[4]))
-        if sel and self.tree_admin_stock.exists(sel[0]): 
-            self.tree_admin_stock.selection_set(sel[0])
+            nodo = self.tree_admin_stock.insert("", "end", values=(r[0], r[1], f"{r[2]} u.", f"${r[3]:.2f}", r[4]))
+            if id_seleccionado is not None and int(r[0]) == int(id_seleccionado):
+                self.tree_admin_stock.selection_set(nodo)
