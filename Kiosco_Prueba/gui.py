@@ -8,7 +8,7 @@ class KioscoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Kiosco Multicompra Concurrente")
-        self.geometry("1050x650")
+        self.geometry("1050x650") # <- CORREGIDO: Eliminado el error de geometría "1000(650)"
         self.configure(bg="#FFFFFF")
         self.resizable(False, False)
         
@@ -154,7 +154,6 @@ class KioscoApp(tk.Tk):
         main_body.columnconfigure(0, weight=3)
         main_body.columnconfigure(1, weight=2)
 
-        # Izquierda: Catálogo
         izq = tk.Frame(main_body, bg="#FFFFFF")
         izq.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#FFFFFF").pack(anchor="w", pady=5)
@@ -187,7 +186,6 @@ class KioscoApp(tk.Tk):
             nombre = item[1]
             precio = item[2]
             
-            # Sumar una unidad directamente en cada clic
             for i, (id_c, _, c_ant, _) in enumerate(self.carrito_actual):
                 if id_c == p_id:
                     self.carrito_actual[i] = (p_id, nombre, c_ant + 1, precio)
@@ -198,7 +196,6 @@ class KioscoApp(tk.Tk):
 
         RoundedButton(form, "➕ Añadir (+1)", agregar_al_carrito, width=140, height=32, color="#10B981").pack(side="left")
 
-        # Derecha: Carrito
         der = tk.Frame(main_body, bg="#F9FAFB", padx=10, pady=10)
         der.grid(row=0, column=1, sticky="nsew")
         tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#F9FAFB").pack(anchor="w")
@@ -290,6 +287,55 @@ class KioscoApp(tk.Tk):
         tk.Frame(nav, bg="#374151", height=1).pack(fill="x", pady=20)
         RoundedButton(nav, "Salir", self.show_login_frame, width=150, height=32, color="#EF4444", bg_color="#111827").pack(side="bottom", pady=20)
 
+    def abir_popup_detalle_pedido(self, orden_id, cliente):
+        """Abre una ventana flotante limpia que detalla el contenido de la orden elegida."""
+        popup = tk.Toplevel(self)
+        popup.title(f"Detalle de Orden: {orden_id}")
+        popup.geometry("500x400")
+        popup.configure(bg="#FFFFFF")
+        popup.grab_set() # Bloquea la ventana de atrás hasta cerrar el popup
+        
+        tk.Label(popup, text=f"📦 Contenido de la Orden", font=("Arial", 14, "bold"), bg="#FFFFFF", fg="#111827").pack(anchor="w", padx=15, pady=(15, 2))
+        tk.Label(popup, text=f"Cliente: {cliente}  |  Código: {orden_id}", font=("Arial", 10), bg="#FFFFFF", fg="#4B5563").pack(anchor="w", padx=15, pady=(0, 10))
+        
+        # Tabla interna del Popup
+        tree_detalle = ttk.Treeview(popup, columns=("Producto", "Cant", "Precio", "Subtotal"), show="headings", height=8)
+        tree_detalle.heading("Producto", text="Producto")
+        tree_detalle.heading("Cant", text="Cant.")
+        tree_detalle.heading("Precio", text="Precio Unit.")
+        tree_detalle.heading("Subtotal", text="Subtotal")
+        
+        tree_detalle.column("Producto", width=180)
+        tree_detalle.column("Cant", width=60, anchor="center")
+        tree_detalle.column("Precio", width=90, anchor="e")
+        tree_detalle.column("Subtotal", width=90, anchor="e")
+        tree_detalle.pack(fill="both", expand=True, padx=15, pady=5)
+        
+        # Cargar los artículos reales filtrados por esa orden en particular
+        total_orden = 0.0
+        todos_los_pedidos = db.obtener_pedidos_agrupados()
+        for r in todos_los_pedidos:
+            # Filtramos en base al esquema original: r[1] = Cód Orden, r[3] = Producto, r[4] = Cant, r[5] = Estado
+            # Nota: Si tu db.obtener_productos guarda los precios unitarios, puedes adaptarlo. Aquí calculamos un estimado visual.
+            if r[1] == orden_id:
+                # Buscamos o simulamos el precio unitario del catálogo real para rellenar
+                nombre_prod = r[3]
+                cantidad = int(r[4])
+                
+                # Buscaremos el precio del producto en la DB original
+                precio_unitario = 0.0
+                for p in db.obtener_productos():
+                    if p[1] == nombre_prod:
+                        precio_unitario = float(p[3])
+                        break
+                
+                subtotal = cantidad * precio_unitario
+                total_orden += subtotal
+                tree_detalle.insert("", "end", values=(nombre_prod, cantidad, f"${precio_unitario:.2f}", f"${subtotal:.2f}"))
+                
+        tk.Label(popup, text=f"Monto Estimado Total: ${total_orden:.2f}", font=("Arial", 12, "bold"), bg="#FFFFFF", fg="#2563EB").pack(anchor="e", padx=15, pady=10)
+        RoundedButton(popup, "Cerrar Ventana", popup.destroy, width=140, height=32, color="#6B7280", bg_color="#FFFFFF").pack(pady=(0, 15))
+
     def show_admin_orders_frame(self):
         self.cambiar_pantalla("admin_orders")
         self.dibujar_menu_navegacion_admin()
@@ -298,31 +344,39 @@ class KioscoApp(tk.Tk):
         derecha.pack(side="right", fill="both", expand=True)
         tk.Label(derecha, text="Gestión Integral de Pedidos de la Cola", font=("Arial", 15, "bold"), bg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
-        self.tree_admin_pedidos = ttk.Treeview(derecha, columns=("ID", "Orden", "Cliente", "Producto", "Cant", "Estado"), show="headings")
-        self.tree_admin_pedidos.heading("ID", text="ID")
-        self.tree_admin_pedidos.heading("Orden", text="Cód Orden")
+        # MODIFICADO: Columnas simplificadas para ver las órdenes de manera individual (sin duplicados visuales)
+        self.tree_admin_pedidos = ttk.Treeview(derecha, columns=("Orden", "Cliente", "Estado"), show="headings")
+        self.tree_admin_pedidos.heading("Orden", text="Código de Orden")
         self.tree_admin_pedidos.heading("Cliente", text="Cliente")
-        self.tree_admin_pedidos.heading("Producto", text="Producto")
-        self.tree_admin_pedidos.heading("Cant", text="Cant")
-        self.tree_admin_pedidos.heading("Estado", text="Estado")
+        self.tree_admin_pedidos.heading("Estado", text="Estado de la Orden")
         
-        self.tree_admin_pedidos.column("ID", width=40)
-        self.tree_admin_pedidos.column("Orden", width=120)
-        self.tree_admin_pedidos.column("Cant", width=50)
-        self.tree_admin_pedidos.column("Estado", width=100)
+        self.tree_admin_pedidos.column("Orden", width=150, anchor="center")
+        self.tree_admin_pedidos.column("Cliente", width=150, anchor="center")
+        self.tree_admin_pedidos.column("Estado", width=120, anchor="center")
         self.tree_admin_pedidos.pack(fill="both", expand=True)
 
         btn_bar = tk.Frame(derecha, bg="#FFFFFF")
         btn_bar.pack(fill="x", pady=15)
         
+        def revisar_pedido_seleccionado():
+            sel = self.tree_admin_pedidos.selection()
+            if not sel:
+                messagebox.showwarning("Atención", "Selecciona una orden de la lista para revisar.")
+                return
+            valores = self.tree_admin_pedidos.item(sel[0])['values']
+            self.abir_popup_detalle_pedido(valores[0], valores[1])
+
         def cambiar_a(estado):
             sel = self.tree_admin_pedidos.selection()
             if not sel: 
+                messagebox.showwarning("Atención", "Selecciona una orden de la lista primero.")
                 return
-            orden_id = self.tree_admin_pedidos.item(sel[0])['values'][1]
+            orden_id = self.tree_admin_pedidos.item(sel[0])['values'][0]
             db.cambiar_estado_pedido(orden_id, estado)
             self.refrescar_pedidos_admin()
 
+        # NUEVO BOTÓN: Abre el desplegable/pop-up informativo
+        RoundedButton(btn_bar, "🔍 Revisar Detalle", revisar_pedido_seleccionado, width=150, height=35, color="#2563EB").pack(side="left", padx=5)
         RoundedButton(btn_bar, "⚙️ Aceptar (En Proceso)", lambda: cambiar_a("En Proceso"), width=160, height=35, color="#F59E0B").pack(side="left", padx=5)
         RoundedButton(btn_bar, "✅ Terminar Pedido", lambda: cambiar_a("Terminado"), width=160, height=35, color="#10B981").pack(side="left", padx=5)
         RoundedButton(btn_bar, "❌ Rechazar / Cancelar", lambda: cambiar_a("Rechazado"), width=160, height=35, color="#EF4444").pack(side="left", padx=5)
@@ -392,6 +446,7 @@ class KioscoApp(tk.Tk):
         if not self.tree_admin_pedidos: 
             return
         
+        # Conservar selección por código de orden
         id_seleccionado = None
         sel = self.tree_admin_pedidos.selection()
         if sel:
@@ -400,10 +455,19 @@ class KioscoApp(tk.Tk):
         for i in self.tree_admin_pedidos.get_children(): 
             self.tree_admin_pedidos.delete(i)
             
+        # MODIFICADO: Agrupamos las líneas repetidas en la vista principal usando un set para evitar duplicados
+        ordenes_procesadas = set()
         for r in db.obtener_pedidos_agrupados():
-            nodo = self.tree_admin_pedidos.insert("", "end", values=r)
-            if id_seleccionado is not None and int(r[0]) == int(id_seleccionado):
-                self.tree_admin_pedidos.selection_set(nodo)
+            # Estructura devuelta por base de datos: (ID, Cod_Orden, Cliente, Producto, Cant, Estado)
+            orden_id = r[1]
+            cliente = r[2]
+            estado = r[5]
+            
+            if orden_id not in ordenes_procesadas:
+                ordenes_procesadas.add(orden_id)
+                nodo = self.tree_admin_pedidos.insert("", "end", values=(orden_id, cliente, estado))
+                if id_seleccionado is not None and str(orden_id) == str(id_seleccionado):
+                    self.tree_admin_pedidos.selection_set(nodo)
 
     def refrescar_stock_admin(self):
         if not self.tree_admin_stock: 
