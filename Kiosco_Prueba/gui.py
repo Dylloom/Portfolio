@@ -8,14 +8,13 @@ class KioscoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Kiosco Multicompra Concurrente")
-        self.geometry("1000(650)")
         self.geometry("1050x650")
         self.configure(bg="#FFFFFF")
         self.resizable(False, False)
         
         self.current_user = None
         self.current_view = "login"
-        self.carrito_actual = [] # Guarda tuplas: (id, nombre, cantidad, precio)
+        self.carrito_actual = []  # Guarda tuplas: (id, nombre, cantidad, precio)
         
         # Árboles globales para refrescos concurrentes
         self.tree_productos_cliente = None
@@ -59,7 +58,8 @@ class KioscoApp(tk.Tk):
 
     def cambiar_pantalla(self, vista_nombre):
         self.current_view = vista_nombre
-        for w in self.container.winfo_children(): w.destroy()
+        for w in self.container.winfo_children(): 
+            w.destroy()
         
         # Reset de punteros
         self.tree_productos_cliente = None
@@ -108,15 +108,21 @@ class KioscoApp(tk.Tk):
         f.place(relx=0.5, rely=0.5, anchor="center")
         
         tk.Label(f, text="Registro de Clientes", font=("Arial", 20, "bold"), bg="#FFFFFF").pack(pady=15)
-        e_user = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", width=28); e_user.pack(ipady=5, pady=5)
-        e_pass = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", show="*", width=28); e_pass.pack(ipady=5, pady=5)
+        
+        e_user = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", width=28)
+        e_user.pack(ipady=5, pady=5)
+        
+        e_pass = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", show="*", width=28)
+        e_pass.pack(ipady=5, pady=5)
         
         def registrar():
             u, p = e_user.get().strip(), e_pass.get().strip()
-            if not u or not p or u.lower() == "admin": return
+            if not u or not p or u.lower() == "admin": 
+                return
             exito, msg = db.registrar_usuario(u, p)
             if exito: 
-                messagebox.showinfo("Listo", msg); self.show_login_frame()
+                messagebox.showinfo("Listo", msg)
+                self.show_login_frame()
             else: 
                 messagebox.showerror("Error", msg)
 
@@ -131,7 +137,8 @@ class KioscoApp(tk.Tk):
         self.cambiar_pantalla("client_home")
         
         # Header
-        h = tk.Frame(self.container, bg="#F9FAFB", height=60); h.pack(fill="x")
+        h = tk.Frame(self.container, bg="#F9FAFB", height=60)
+        h.pack(fill="x")
         tk.Label(h, text=f"👋 ¡Hola, {self.current_user}!", font=("Arial", 14, "bold"), bg="#F9FAFB").pack(side="left", padx=20)
         RoundedButton(h, "Cerrar Sesión", self.show_login_frame, width=110, height=30, color="#EF4444", bg_color="#F9FAFB").pack(side="right", padx=20, pady=15)
 
@@ -143,7 +150,7 @@ class KioscoApp(tk.Tk):
         
         RoundedButton(body, "🛒 Ir a Comprar Ahora", self.show_client_shop_frame, width=220, height=45, color="#2563EB").pack(pady=20)
         
-        # Desparramar alertas del Monitor apenas abre la interfaz
+        # Mostrar alertas del Monitor apenas abre la interfaz
         self.lanzar_alertas_usuario(self.current_user)
 
     def show_client_shop_frame(self):
@@ -152,12 +159,15 @@ class KioscoApp(tk.Tk):
         self.carrito_actual = []
         
         # Panel Superior
-        h = tk.Frame(self.container, bg="#F3F4F6", height=50); h.pack(fill="x")
+        h = tk.Frame(self.container, bg="#F3F4F6", height=50)
+        h.pack(fill="x")
         tk.Label(h, text="Arma tu Pedido (Múltiples Productos)", font=("Arial", 12, "bold"), bg="#F3F4F6").pack(side="left", padx=15)
         RoundedButton(h, "🎛️ Volver al Inicio", self.show_client_home_frame, width=140, height=28, color="#4B5563", bg_color="#F3F4F6").pack(side="right", padx=15, pady=10)
 
-        main_body = tk.Frame(self.container, bg="#FFFFFF"); main_body.pack(fill="both", expand=True, padx=15, pady=15)
-        main_body.columnconfigure(0, weight=3); main_body.columnconfigure(1, weight=2)
+        main_body = tk.Frame(self.container, bg="#FFFFFF")
+        main_body.pack(fill="both", expand=True, padx=15, pady=15)
+        main_body.columnconfigure(0, weight=3)
+        main_body.columnconfigure(1, weight=2)
 
         # Izquierda: Catálogo
         izq = tk.Frame(main_body, bg="#FFFFFF")
@@ -165,26 +175,43 @@ class KioscoApp(tk.Tk):
         tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#FFFFFF").pack(anchor="w", pady=5)
         
         self.tree_productos_cliente = ttk.Treeview(izq, columns=("ID", "Nombre", "Precio", "Stock", "Cat"), show="headings", height=12)
-        self.tree_productos_cliente.heading("ID", text="ID"); self.tree_productos_cliente.heading("Nombre", text="Producto"); self.tree_productos_cliente.heading("Precio", text="Precio"); self.tree_productos_cliente.heading("Stock", text="Stock"); self.tree_productos_cliente.heading("Cat", text="Categoría")
-        self.tree_productos_cliente.column("ID", width=35); self.tree_productos_cliente.column("Nombre", width=180); self.tree_productos_cliente.column("Precio", width=70); self.tree_productos_cliente.column("Stock", width=60); self.tree_productos_cliente.column("Cat", width=90)
+        self.tree_productos_cliente.heading("ID", text="ID")
+        self.tree_productos_cliente.heading("Nombre", text="Producto")
+        self.tree_productos_cliente.heading("Precio", text="Precio")
+        self.tree_productos_cliente.heading("Stock", text="Stock")
+        self.tree_productos_cliente.heading("Cat", text="Categoría")
+        
+        self.tree_productos_cliente.column("ID", width=35)
+        self.tree_productos_cliente.column("Nombre", width=180)
+        self.tree_productos_cliente.column("Precio", width=70)
+        self.tree_productos_cliente.column("Stock", width=60)
+        self.tree_productos_cliente.column("Cat", width=90)
         self.tree_productos_cliente.pack(fill="both", expand=True)
 
         # Formulario de cantidad
-        form = tk.Frame(izq, bg="#FFFFFF"); form.pack(fill="x", pady=10)
+        form = tk.Frame(izq, bg="#FFFFFF")
+        form.pack(fill="x", pady=10)
         tk.Label(form, text="Cant:", bg="#FFFFFF").pack(side="left")
-        e_qty = tk.Entry(form, font=("Arial", 11), width=6); e_qty.pack(side="left", padx=5); e_qty.insert(0, "1")
+        
+        e_qty = tk.Entry(form, font=("Arial", 11), width=6)
+        e_qty.pack(side="left", padx=5)
+        e_qty.insert(0, "1")
         
         def agregar_al_carrito():
             sel = self.tree_productos_cliente.selection()
-            if not sel: return
+            if not sel: 
+                return
             try:
                 cantidad = int(e_qty.get().strip())
-                if cantidad <= 0: raise ValueError
+                if cantidad <= 0: 
+                    raise ValueError
             except ValueError:
-                messagebox.showerror("Error", "Cantidad inválida"); return
+                messagebox.showerror("Error", "Cantidad inválida")
+                return
                 
             item = self.tree_productos_cliente.item(sel[0])['values']
-            # Evitar duplicados en el carrito visual
+            
+            # Evitar duplicados en el carrito visual local
             for i, (p_id, _, c_ant, _) in enumerate(self.carrito_actual):
                 if p_id == item[0]:
                     self.carrito_actual[i] = (p_id, item[1], c_ant + cantidad, item[2])
@@ -201,8 +228,13 @@ class KioscoApp(tk.Tk):
         tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#F9FAFB").pack(anchor="w")
         
         self.tree_carrito_cliente = ttk.Treeview(der, columns=("Nombre", "Cant", "Subtotal"), show="headings", height=8)
-        self.tree_carrito_cliente.heading("Nombre", text="Item"); self.tree_carrito_cliente.heading("Cant", text="Cant"); self.tree_carrito_cliente.heading("Subtotal", text="Subtotal")
-        self.tree_carrito_cliente.column("Nombre", width=120); self.tree_carrito_cliente.column("Cant", width=45); self.tree_carrito_cliente.column("Subtotal", width=70)
+        self.tree_carrito_cliente.heading("Nombre", text="Item")
+        self.tree_carrito_cliente.heading("Cant", text="Cant")
+        self.tree_carrito_cliente.heading("Subtotal", text="Subtotal")
+        
+        self.tree_carrito_cliente.column("Nombre", width=120)
+        self.tree_carrito_cliente.column("Cant", width=45)
+        self.tree_carrito_cliente.column("Subtotal", width=70)
         self.tree_carrito_cliente.pack(fill="both", expand=True, pady=5)
         
         self.lbl_total = tk.Label(der, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#F9FAFB", fg="#111827")
@@ -210,7 +242,8 @@ class KioscoApp(tk.Tk):
 
         def despachar_carrito_completo():
             if not self.carrito_actual: 
-                messagebox.showwarning("Vacío", "El carrito está vacío."); return
+                messagebox.showwarning("Vacío", "El carrito está vacío.")
+                return
             
             # Generar identificador único de orden de compra
             orden_id = f"ORD-{int(time.time())}"
@@ -226,15 +259,19 @@ class KioscoApp(tk.Tk):
         self.refrescar_catalogo_cliente()
 
     def refrescar_catalogo_cliente(self):
-        if not self.tree_productos_cliente: return
+        if not self.tree_productos_cliente: 
+            return
         sel = self.tree_productos_cliente.selection()
-        for i in self.tree_productos_cliente.get_children(): self.tree_productos_cliente.delete(i)
+        for i in self.tree_productos_cliente.get_children(): 
+            self.tree_productos_cliente.delete(i)
         for r in db.obtener_productos():
             self.tree_productos_cliente.insert("", "end", values=(r[0], r[1], f"${r[3]:.2f}", f"{r[2]} u.", r[4]))
-        if sel and self.tree_productos_cliente.exists(sel[0]): self.tree_productos_cliente.selection_set(sel[0])
+        if sel and self.tree_productos_cliente.exists(sel[0]): 
+            self.tree_productos_cliente.selection_set(sel[0])
 
     def refrescar_tabla_carrito_local(self):
-        for i in self.tree_carrito_cliente.get_children(): self.tree_carrito_cliente.delete(i)
+        for i in self.tree_carrito_cliente.get_children(): 
+            self.tree_carrito_cliente.delete(i)
         total = 0.0
         for p_id, nombre, cant, precio_str in self.carrito_actual:
             precio = float(str(precio_str).replace('$', ''))
@@ -247,7 +284,8 @@ class KioscoApp(tk.Tk):
     # 3. PANTALLAS: ADMINISTRADOR
     # ==========================================
     def dibujar_menu_navegacion_admin(self):
-        nav = tk.Frame(self.container, bg="#111827", width=180); nav.pack(side="left", fill="y")
+        nav = tk.Frame(self.container, bg="#111827", width=180)
+        nav.pack(side="left", fill="y")
         nav.pack_propagate(False)
         
         tk.Label(nav, text="PANEL ADMIN", font=("Arial", 11, "bold"), bg="#111827", fg="#9CA3AF").pack(pady=20)
@@ -263,20 +301,32 @@ class KioscoApp(tk.Tk):
         self.cambiar_pantalla("admin_orders")
         self.dibujar_menu_navegacion_admin()
         
-        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20); derecha.pack(side="right", fill="both", expand=True)
+        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20)
+        derecha.pack(side="right", fill="both", expand=True)
         tk.Label(derecha, text="Gestión Integral de Pedidos de la Cola", font=("Arial", 15, "bold"), bg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
         self.tree_admin_pedidos = ttk.Treeview(derecha, columns=("ID", "Orden", "Cliente", "Producto", "Cant", "Estado"), show="headings")
-        self.tree_admin_pedidos.heading("ID", text="ID"); self.tree_admin_pedidos.heading("Orden", text="Cód Orden"); self.tree_admin_pedidos.heading("Cliente", text="Cliente"); self.tree_admin_pedidos.heading("Producto", text="Producto"); self.tree_admin_pedidos.heading("Cant", text="Cant"); self.tree_admin_pedidos.heading("Estado", text="Estado")
-        self.tree_admin_pedidos.column("ID", width=40); self.tree_admin_pedidos.column("Orden", width=120); self.tree_admin_pedidos.column("Cant", width=50); self.tree_admin_pedidos.column("Estado", width=100)
+        self.tree_admin_pedidos.heading("ID", text="ID")
+        self.tree_admin_pedidos.heading("Orden", text="Cód Orden")
+        self.tree_admin_pedidos.heading("Cliente", text="Cliente")
+        self.tree_admin_pedidos.heading("Producto", text="Producto")
+        self.tree_admin_pedidos.heading("Cant", text="Cant")
+        self.tree_admin_pedidos.heading("Estado", text="Estado")
+        
+        self.tree_admin_pedidos.column("ID", width=40)
+        self.tree_admin_pedidos.column("Orden", width=120)
+        self.tree_admin_pedidos.column("Cant", width=50)
+        self.tree_admin_pedidos.column("Estado", width=100)
         self.tree_admin_pedidos.pack(fill="both", expand=True)
 
         # Botonera de control de Estados
-        btn_bar = tk.Frame(derecha, bg="#FFFFFF"); btn_bar.pack(fill="x", pady=15)
+        btn_bar = tk.Frame(derecha, bg="#FFFFFF")
+        btn_bar.pack(fill="x", pady=15)
         
         def cambiar_a(estado):
             sel = self.tree_admin_pedidos.selection()
-            if not sel: return
+            if not sel: 
+                return
             orden_id = self.tree_admin_pedidos.item(sel[0])['values'][1]
             db.cambiar_estado_pedido(orden_id, estado)
             self.refrescar_pedidos_admin()
@@ -292,12 +342,20 @@ class KioscoApp(tk.Tk):
         self.cambiar_pantalla("admin_stock")
         self.dibujar_menu_navegacion_admin()
         
-        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20); derecha.pack(side="right", fill="both", expand=True)
+        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20)
+        derecha.pack(side="right", fill="both", expand=True)
         tk.Label(derecha, text="Inventario & Reabastecimiento de Kiosco", font=("Arial", 15, "bold"), bg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
         self.tree_admin_stock = ttk.Treeview(derecha, columns=("ID", "Producto", "Stock", "Precio", "Cat"), show="headings", height=10)
-        self.tree_admin_stock.heading("ID", text="ID"); self.tree_admin_stock.heading("Producto", text="Producto"); self.tree_admin_stock.heading("Stock", text="Stock"); self.tree_admin_stock.heading("Precio", text="Precio"); self.tree_admin_stock.heading("Cat", text="Categoría")
-        self.tree_admin_stock.column("ID", width=40); self.tree_admin_stock.column("Stock", width=80); self.tree_admin_stock.column("Precio", width=80)
+        self.tree_admin_stock.heading("ID", text="ID")
+        self.tree_admin_stock.heading("Producto", text="Producto")
+        self.tree_admin_stock.heading("Stock", text="Stock")
+        self.tree_admin_stock.heading("Precio", text="Precio")
+        self.tree_admin_stock.heading("Cat", text="Categoría")
+        
+        self.tree_admin_stock.column("ID", width=40)
+        self.tree_admin_stock.column("Stock", width=80)
+        self.tree_admin_stock.column("Precio", width=80)
         self.tree_admin_stock.pack(fill="both", expand=True)
 
         # Formulario para añadir nuevos productos
@@ -305,16 +363,21 @@ class KioscoApp(tk.Tk):
         f_add.pack(fill="x", pady=15)
         
         tk.Label(f_add, text="Nombre:", bg="#FFFFFF").grid(row=0, column=0, sticky="w")
-        e_name = tk.Entry(f_add, width=15); e_name.grid(row=0, column=1, padx=5, pady=2)
+        e_name = tk.Entry(f_add, width=15)
+        e_name.grid(row=0, column=1, padx=5, pady=2)
         
         tk.Label(f_add, text="Cant:", bg="#FFFFFF").grid(row=0, column=2, sticky="w")
-        e_qty = tk.Entry(f_add, width=8); e_qty.grid(row=0, column=3, padx=5, pady=2)
+        e_qty = tk.Entry(f_add, width=8)
+        e_qty.grid(row=0, column=3, padx=5, pady=2)
         
         tk.Label(f_add, text="Precio ($):", bg="#FFFFFF").grid(row=0, column=4, sticky="w")
-        e_price = tk.Entry(f_add, width=8); e_price.grid(row=0, column=5, padx=5, pady=2)
+        e_price = tk.Entry(f_add, width=8)
+        e_price.grid(row=0, column=5, padx=5, pady=2)
         
         tk.Label(f_add, text="Categoría:", bg="#FFFFFF").grid(row=0, column=6, sticky="w")
-        e_cat = tk.Entry(f_add, width=12); e_cat.grid(row=0, column=7, padx=5, pady=2); e_cat.insert(0, "Golosinas")
+        e_cat = tk.Entry(f_add, width=12)
+        e_cat.grid(row=0, column=7, padx=5, pady=2)
+        e_cat.insert(0, "Golosinas")
 
         def guardar_producto():
             try:
@@ -322,10 +385,13 @@ class KioscoApp(tk.Tk):
                 qty = int(e_qty.get().strip())
                 price = float(e_price.get().strip())
                 cat = e_cat.get().strip()
-                if not name or qty < 0 or price < 0: raise ValueError
+                if not name or qty < 0 or price < 0: 
+                    raise ValueError
                 db.agregar_producto(name, qty, price, cat)
                 self.refrescar_stock_admin()
-                e_name.delete(0, tk.END); e_qty.delete(0, tk.END); e_price.delete(0, tk.END)
+                e_name.delete(0, tk.END)
+                e_qty.delete(0, tk.END)
+                e_price.delete(0, tk.END)
             except ValueError:
                 messagebox.showerror("Error", "Campos incorrectos.")
 
@@ -333,17 +399,23 @@ class KioscoApp(tk.Tk):
         self.refrescar_stock_admin()
 
     def refrescar_pedidos_admin(self):
-        if not self.tree_admin_pedidos: return
+        if not self.tree_admin_pedidos: 
+            return
         sel = self.tree_admin_pedidos.selection()
-        for i in self.tree_admin_pedidos.get_children(): self.tree_admin_pedidos.delete(i)
+        for i in self.tree_admin_pedidos.get_children(): 
+            self.tree_admin_pedidos.delete(i)
         for r in db.obtener_pedidos_agrupados():
             self.tree_admin_pedidos.insert("", "end", values=r)
-        if sel and self.tree_admin_pedidos.exists(sel[0]): self.tree_admin_pedidos.selection_set(sel[0])
+        if sel and self.tree_admin_pedidos.exists(sel[0]): 
+            self.tree_admin_pedidos.selection_set(sel[0])
 
     def refrescar_stock_admin(self):
-        if not self.tree_admin_stock: return
+        if not self.tree_admin_stock: 
+            return
         sel = self.tree_admin_stock.selection()
-        for i in self.tree_admin_stock.get_children(): self.tree_admin_stock.delete(i)
+        for i in self.tree_admin_stock.get_children(): 
+            self.tree_admin_stock.delete(i)
         for r in db.obtener_productos():
             self.tree_admin_stock.insert("", "end", values=(r[0], r[1], f"{r[2]} u.", f"${r[3]:.2f}", r[4]))
-        if sel and self.tree_admin_stock.exists(sel[0]): self.tree_admin_stock.selection_set(sel[0])
+        if sel and self.tree_admin_stock.exists(sel[0]): 
+            self.tree_admin_stock.selection_set(sel[0])
