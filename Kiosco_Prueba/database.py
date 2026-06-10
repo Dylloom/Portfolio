@@ -3,50 +3,58 @@ import threading
 import queue
 import time
 
-DB_NAME = 'kiosco_concurrente.db'
+DB_NAME = 'kiosco_avanzado.db'
 
-# =====================================================================
-# 1. COLA (Queue)
-# =====================================================================
-# Canal seguro donde los hilos de los clientes depositan sus pedidos
+# 1. COLA CONCURRENTE (Recibe carritos completos: (username, orden_id, lista_items))
 order_queue = queue.Queue()
 
-# =====================================================================
-# 2. SEMÁFORO (Semaphore)
-# =====================================================================
-# Limita el acceso a la base de datos a un número controlado de hilos simultáneos
+# 2. SEMÁFORO (Controla el acceso estricto a la E/S del disco duro)
 db_semaphore = threading.BoundedSemaphore(value=1)
 
-# =====================================================================
-# 3. MONITOR (Monitor)
-# =====================================================================
-# Encapsula el estado de los datos con exclusión mutua y variables de condición
+# 3. MONITOR (Garantiza la exclusión mutua en inventario y estados)
 class KioscoMonitor:
     def __init__(self):
         self._lock = threading.Lock()
-        self._condition = threading.Condition(self._lock)
 
     def inicializar_tablas(self):
-        with self._lock:  # Región crítica protegida por el Monitor
+        with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute('''CREATE TABLE IF NOT EXISTS usuarios 
                          (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, role TEXT)''')
             c.execute('''CREATE TABLE IF NOT EXISTS productos 
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, cantidad INTEGER, precio REAL)''')
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, cantidad INTEGER, precio REAL, categoria TEXT)''')
             c.execute('''CREATE TABLE IF NOT EXISTS pedidos 
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, producto_id INTEGER, 
-                          nombre_producto TEXT, cantidad INTEGER, estado TEXT)''')
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT, orden_id TEXT, username TEXT, producto_id INTEGER, 
+                          nombre_producto TEXT, cantidad INTEGER, precio_unid REAL, estado TEXT, notificado INTEGER DEFAULT 0)''')
             
+            # Crear Administrador
             c.execute("SELECT * FROM usuarios WHERE username='admin'")
             if not c.fetchone():
                 c.execute("INSERT INTO usuarios (username, password, role) VALUES ('admin', '1234', 'admin')")
                 
+            # Carga Masiva de Productos con Precios Reales de Kiosco
             c.execute("SELECT COUNT(*) FROM productos")
             if c.fetchone()[0] == 0:
-                c.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES ('Alfajor Marley', 45, 950.0)")
-                c.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES ('Gaseosa 500ml', 20, 1500.0)")
-                c.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES ('Papas Fritas', 15, 1200.0)")
+                productos_semilla = [
+                    ('Alfajor Jorgito Chocolate', 50, 1500.0, 'Alfajores'),
+                    ('Alfajor Milka Oreo', 30, 2400.0, 'Alfajores'),
+                    ('Alfajor Havanna Premium', 20, 3500.0, 'Alfajores'),
+                    ('Coca Cola 500ml', 40, 2600.0, 'Bebidas'),
+                    ('Agua Mineral Villavicencio 500ml', 35, 1800.0, 'Bebidas'),
+                    ('Energizante Monster 473ml', 25, 3800.0, 'Bebidas'),
+                    ('Papas Fritas Lays Clásicas', 15, 3200.0, 'Snacks'),
+                    ('Doritos Queso Mega 100g', 15, 3500.0, 'Snacks'),
+                    ('Chocolatada Cindor 250ml', 20, 2900.0, 'Lácteos'),
+                    ('Chocolate Block 38g', 25, 2100.0, 'Chocolates'),
+                    ('Gomitas Mogul Ositos', 40, 1300.0, 'Golosinas'),
+                    ('Chupetín Pico Dulce', 100, 500.0, 'Golosinas'),
+                    ('Chicles Topline Fresh', 60, 1200.0, 'Golosinas'),
+                    ('Barra de Cereal Flow', 45, 1100.0, 'Saludable'),
+                    ('Galletitas Oreo', 30, 2200.0, 'Galletitas'),
+                    ('Turrón de Maní Arcor', 120, 600.0, 'Golosinas')
+                ]
+                c.executemany("INSERT INTO productos (nombre, cantidad, precio, categoria) VALUES (?, ?, ?, ?)", productos_semilla)
             conn.commit()
             conn.close()
 
@@ -55,9 +63,9 @@ class KioscoMonitor:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             c.execute("SELECT role FROM usuarios WHERE username=? AND password=?", (username, password))
-            result = c.fetchone()
+            res = c.fetchone()
             conn.close()
-            return result[0] if result else None
+            return res[0] if res else None
 
     def registrar_usuario(self, username, password):
         with self._lock:
@@ -66,118 +74,122 @@ class KioscoMonitor:
             try:
                 c.execute("INSERT INTO usuarios (username, password, role) VALUES (?, ?, 'client')", (username, password))
                 conn.commit()
-                return True, "Usuario creado con éxito."
+                return True, "Registro exitoso."
             except sqlite3.IntegrityError:
-                return False, "El nombre de usuario ya existe."
+                return False, "El usuario ya existe."
             finally:
                 conn.close()
 
-    def obtener_productos_disponibles(self):
-        with self._lock:
-            conn = sqlite3.connect(DB_NAME)
-            c = conn.cursor()
-            c.execute("SELECT id, nombre, precio, cantidad FROM productos WHERE cantidad > 0")
-            res = c.fetchall()
-            conn.close()
-            return res
-
-    def obtener_todos_los_productos(self):
-        with self._lock:
-            conn = sqlite3.connect(DB_NAME)
-            c = conn.cursor()
-            c.execute("SELECT id, nombre, cantidad, precio FROM productos")
-            res = c.fetchall()
-            conn.close()
-            return res
-
-    def obtener_todos_los_pedidos(self):
-        with self._lock:
-            conn = sqlite3.connect(DB_NAME)
-            c = conn.cursor()
-            c.execute("SELECT id, username, nombre_producto, cantidad, estado FROM pedidos ORDER BY id DESC")
-            res = c.fetchall()
-            conn.close()
-            return res
-
-    def transaccion_pedido_interno(self, username, producto_id, nombre_producto, cantidad):
-        # Operación atómica dentro del Monitor: verifica stock y descuenta en un solo bloque cerrado
+    def procesar_carrito_en_lote(self, username, orden_id, items_carrito):
+        """ Valida y descuenta todo el carrito de forma atómica en el Monitor """
         with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
             
-            c.execute("SELECT cantidad FROM productos WHERE id = ?", (producto_id,))
-            row = c.fetchone()
-            if not row or row[0] < cantidad:
-                conn.close()
-                return False
+            # Primera pasada: Validar stock de todos los productos solicitados
+            for p_id, _, cant, _ in items_carrito:
+                c.execute("SELECT cantidad, nombre FROM productos WHERE id = ?", (p_id,))
+                row = c.fetchone()
+                if not row or row[0] < cant:
+                    # Si uno falla, la orden entera se registra inicialmente como Rechazada por falta de stock
+                    for p_id_b, p_nom_b, cant_b, p_pre_b in items_carrito:
+                        c.execute('''INSERT INTO pedidos (orden_id, username, producto_id, nombre_producto, cantidad, precio_unid, estado) 
+                                     VALUES (?, ?, ?, ?, ?, ?, 'Rechazado')''', (orden_id, username, p_id_b, p_nom_b, cant_b, p_pre_b))
+                    conn.commit()
+                    conn.close()
+                    return False
             
-            # Descontar del inventario y asentar el pedido
-            c.execute("UPDATE productos SET cantidad = cantidad - ? WHERE id = ?", (cantidad, producto_id))
-            c.execute("INSERT INTO pedidos (username, producto_id, nombre_producto, cantidad, estado) VALUES (?, ?, ?, ?, 'Pendiente')",
-                      (username, producto_id, nombre_producto, cantidad))
+            # Segunda pasada: Si todo está OK, se descuenta stock y se pone "En Proceso"
+            for p_id, p_nom, cant, p_pre in items_carrito:
+                c.execute("UPDATE productos SET cantidad = cantidad - ? WHERE id = ?", (cant, p_id))
+                c.execute('''INSERT INTO pedidos (orden_id, username, producto_id, nombre_producto, cantidad, precio_unid, estado) 
+                             VALUES (?, ?, ?, ?, ?, ?, 'En Proceso')''', (orden_id, username, p_id, p_nom, cant, p_pre))
+            
             conn.commit()
             conn.close()
-            
-            # Notifica a cualquier hilo interesado de que el estado interno ha cambiado
-            self._condition.notify_all()
             return True
 
-    def agregar_producto(self, nombre, cantidad, precio):
+    def obtener_notificaciones_usuario(self, username):
+        """ Busca pedidos cuyos estados cambiaron y no han sido alertados al cliente """
         with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
-            c.execute("INSERT INTO productos (nombre, cantidad, precio) VALUES (?, ?, ?)", (nombre, cantidad, precio))
-            conn.commit()
+            c.execute("SELECT DISTINCT orden_id, estado FROM pedidos WHERE username=? AND notificado=0", (username,))
+            alertas = c.fetchall()
+            if alertas:
+                c.execute("UPDATE pedidos SET notificado=1 WHERE username=?", (username,))
+                conn.commit()
             conn.close()
-            self._condition.notify_all()
+            return alertas
 
-    def marcar_pedido_completado(self, pedido_id):
+    def obtener_productos(self):
         with self._lock:
             conn = sqlite3.connect(DB_NAME)
             c = conn.cursor()
-            c.execute("UPDATE pedidos SET estado='Completado' WHERE id=?", (pedido_id,))
+            c.execute("SELECT id, nombre, cantidad, precio, categoria FROM productos")
+            res = c.fetchall()
+            conn.close()
+            return res
+
+    def obtener_pedidos_agrupados(self):
+        with self._lock:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute('''SELECT id, orden_id, username, nombre_producto, cantidad, estado 
+                         FROM pedidos ORDER BY id DESC''')
+            res = c.fetchall()
+            conn.close()
+            return res
+
+    def cambiar_estado_pedido(self, orden_id, nuevo_estado):
+        with self._lock:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            
+            # Si el administrador decide rechazarlo de forma manual, devolvemos el stock consumido
+            if nuevo_estado == "Rechazado":
+                c.execute("SELECT producto_id, cantidad, estado FROM pedidos WHERE orden_id=?", (orden_id,))
+                items = c.fetchall()
+                for prod_id, cant, est_ant in items:
+                    if est_ant != "Rechazado": # Evitar doble devolución
+                        c.execute("UPDATE productos SET cantidad = cantidad + ? WHERE id = ?", (cant, prod_id))
+                        
+            c.execute("UPDATE pedidos SET estado=?, notificado=0 WHERE orden_id=?", (nuevo_estado, orden_id))
             conn.commit()
             conn.close()
-            self._condition.notify_all()
 
-# Instancia única del Monitor global
+    def agregar_nuevo_producto(self, nombre, cantidad, precio, categoria):
+        with self._lock:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("INSERT INTO productos (nombre, cantidad, precio, categoria) VALUES (?, ?, ?, ?)", (nombre, cantidad, precio, categoria))
+            conn.commit()
+            conn.close()
+
 monitor = KioscoMonitor()
 
-# =====================================================================
-# HILO TRABAJADOR (Background Worker Thread)
-# =====================================================================
-def deamon_procesador_pedidos():
-    """ Hilo secundario infinito que consume la Cola, respetando Semáforos y Monitores """
+# TRABAJADOR DE FONDO (Worker Thread)
+def deamon_procesador_carritos():
     while True:
-        # Extrae un elemento de la COLA (bloqueante si está vacía)
-        pedido = order_queue.get()
-        if pedido is None:
-            break
+        pedido_completo = order_queue.get()
+        if pedido_completo is None: break
+        username, orden_id, items_carrito = pedido_completo
         
-        username, prod_id, prod_name, cantidad = pedido
-        
-        # El hilo solicita permiso al SEMÁFORO antes de operar
         with db_semaphore:
-            # Simulamos un retraso intencional (preparación del pedido/red) de 0.8 segundos
-            time.sleep(0.8)
-            # Invoca de forma segura la región crítica del MONITOR
-            monitor.transaccion_pedido_interno(username, prod_id, prod_name, cantidad)
+            time.sleep(0.5) # Simulación de procesamiento de pasarela de pago / empaque
+            monitor.procesar_carrito_en_lote(username, orden_id, items_carrito)
             
         order_queue.task_done()
 
-# Iniciamos el hilo de procesamiento de fondo de inmediato en modo demonio
-threading.Thread(target=deamon_procesador_pedidos, daemon=True).start()
+threading.Thread(target=deamon_procesador_carritos, daemon=True).start()
 
-# --- Interfaz pública expuesta hacia el archivo GUI ---
+# Puentes Públicos
 def init_db(): monitor.inicializar_tablas()
 def verificar_login(u, p): return monitor.verificar_login(u, p)
 def registrar_usuario(u, p): return monitor.registrar_usuario(u, p)
-def obtener_productos_cliente(): return monitor.obtener_productos_disponibles()
-def obtener_todos_los_productos(): return monitor.obtener_todos_los_productos()
-def obtener_todos_los_pedidos(): return monitor.obtener_todos_los_pedidos()
-def agregar_producto(n, c, p): monitor.agregar_producto(n, c, p)
-def marcar_pedido_completado(pid): monitor.marcar_pedido_completado(pid)
-
-def encolar_pedido(username, producto_id, nombre_producto, cantidad):
-    """ Coloca el requerimiento en la Cola concurrente, liberando la UI de inmediato """
-    order_queue.put((username, producto_id, nombre_producto, cantidad))
+def obtener_productos(): return monitor.obtener_productos()
+def obtener_pedidos_agrupados(): return monitor.obtener_pedidos_agrupados()
+def cambiar_estado_pedido(oid, est): monitor.cambiar_estado_pedido(oid, est)
+def agregar_producto(n, c, p, cat): monitor.agregar_nuevo_producto(n, c, p, cat)
+def chequear_alertas(u): return monitor.obtener_notificaciones_usuario(u)
+def encolar_carrito(u, oid, items): order_queue.put((u, oid, items))
