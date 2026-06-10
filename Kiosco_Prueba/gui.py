@@ -14,9 +14,8 @@ class KioscoApp(tk.Tk):
         
         self.current_user = None
         self.current_view = "login"
-        self.carrito_actual = []  # Guarda tuplas: (id, nombre, cantidad, precio)
+        self.carrito_actual = []
         
-        # Árboles globales para refrescos concurrentes
         self.tree_productos_cliente = None
         self.tree_carrito_cliente = None
         self.tree_admin_stock = None
@@ -46,7 +45,6 @@ class KioscoApp(tk.Tk):
         self.after(1500, self.loop_refresco_asincrono)
 
     def lanzar_alertas_usuario(self, username):
-        """ Revisa los estados apenas abre la app o ingresa a su panel """
         alertas = db.chequear_alertas(username)
         for orden_id, estado in alertas:
             if estado == "En Proceso":
@@ -61,15 +59,11 @@ class KioscoApp(tk.Tk):
         for w in self.container.winfo_children(): 
             w.destroy()
         
-        # Reset de punteros
         self.tree_productos_cliente = None
         self.tree_carrito_cliente = None
         self.tree_admin_stock = None
         self.tree_admin_pedidos = None
 
-    # ==========================================
-    # 1. LOGIN & REGISTRO
-    # ==========================================
     def show_login_frame(self):
         self.cambiar_pantalla("login")
         f = tk.Frame(self.container, bg="#FFFFFF")
@@ -129,14 +123,9 @@ class KioscoApp(tk.Tk):
         RoundedButton(f, "Crear Cuenta", registrar, width=250, height=40, color="#10B981").pack(pady=10)
         RoundedButton(f, "Volver", self.show_login_frame, width=250, height=36, color="#6B7280").pack()
 
-    # ==========================================
-    # 2. PANTALLAS: CLIENTE
-    # ==========================================
     def show_client_home_frame(self):
-        """ Pantalla de inicio del Cliente (Dashboard con Alertas) """
         self.cambiar_pantalla("client_home")
         
-        # Header
         h = tk.Frame(self.container, bg="#F9FAFB", height=60)
         h.pack(fill="x")
         tk.Label(h, text=f"👋 ¡Hola, {self.current_user}!", font=("Arial", 14, "bold"), bg="#F9FAFB").pack(side="left", padx=20)
@@ -149,16 +138,12 @@ class KioscoApp(tk.Tk):
         tk.Label(body, text="Desde aquí puedes armar tus pedidos agregando múltiples tipos de golosinas,\nbebidas y snacks a tu carrito simultáneamente.", font=("Arial", 11), bg="#FFFFFF", fg="#4B5563").pack(pady=10)
         
         RoundedButton(body, "🛒 Ir a Comprar Ahora", self.show_client_shop_frame, width=220, height=45, color="#2563EB").pack(pady=20)
-        
-        # Mostrar alertas del Monitor apenas abre la interfaz
         self.lanzar_alertas_usuario(self.current_user)
 
     def show_client_shop_frame(self):
-        """ Pantalla de Selección de Múltiples Productos y Carrito Abierto """
         self.cambiar_pantalla("client_shop")
         self.carrito_actual = []
         
-        # Panel Superior
         h = tk.Frame(self.container, bg="#F3F4F6", height=50)
         h.pack(fill="x")
         tk.Label(h, text="Arma tu Pedido (Múltiples Productos)", font=("Arial", 12, "bold"), bg="#F3F4F6").pack(side="left", padx=15)
@@ -169,7 +154,6 @@ class KioscoApp(tk.Tk):
         main_body.columnconfigure(0, weight=3)
         main_body.columnconfigure(1, weight=2)
 
-        # Izquierda: Catálogo
         izq = tk.Frame(main_body, bg="#FFFFFF")
         izq.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#FFFFFF").pack(anchor="w", pady=5)
@@ -188,7 +172,6 @@ class KioscoApp(tk.Tk):
         self.tree_productos_cliente.column("Cat", width=90)
         self.tree_productos_cliente.pack(fill="both", expand=True)
 
-        # Formulario de cantidad
         form = tk.Frame(izq, bg="#FFFFFF")
         form.pack(fill="x", pady=10)
         tk.Label(form, text="Cant:", bg="#FFFFFF").pack(side="left")
@@ -211,7 +194,6 @@ class KioscoApp(tk.Tk):
                 
             item = self.tree_productos_cliente.item(sel[0])['values']
             
-            # Evitar duplicados en el carrito visual local
             for i, (p_id, _, c_ant, _) in enumerate(self.carrito_actual):
                 if p_id == item[0]:
                     self.carrito_actual[i] = (p_id, item[1], c_ant + cantidad, item[2])
@@ -222,7 +204,6 @@ class KioscoApp(tk.Tk):
 
         RoundedButton(form, "🛒 Añadir al Carrito", agregar_al_carrito, width=140, height=30, color="#10B981").pack(side="left", padx=10)
 
-        # Derecha: Carrito de Compras Actual
         der = tk.Frame(main_body, bg="#F9FAFB", padx=10, pady=10)
         der.grid(row=0, column=1, sticky="nsew")
         tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#F9FAFB").pack(anchor="w")
@@ -245,10 +226,7 @@ class KioscoApp(tk.Tk):
                 messagebox.showwarning("Vacío", "El carrito está vacío.")
                 return
             
-            # Generar identificador único de orden de compra
             orden_id = f"ORD-{int(time.time())}"
-            
-            # ENCOLAR CARRITO CONCURRENTEMENTE
             db.encolar_carrito(self.current_user, orden_id, self.carrito_actual)
             
             messagebox.showinfo("En Cola", f"Tu orden conjunta #{orden_id} ha sido encolada de forma asíncrona.")
@@ -280,9 +258,6 @@ class KioscoApp(tk.Tk):
             self.tree_carrito_cliente.insert("", "end", values=(nombre, cant, f"${sub:.2f}"))
         self.lbl_total.config(text=f"Total: ${total:.2f}")
 
-    # ==========================================
-    # 3. PANTALLAS: ADMINISTRADOR
-    # ==========================================
     def dibujar_menu_navegacion_admin(self):
         nav = tk.Frame(self.container, bg="#111827", width=180)
         nav.pack(side="left", fill="y")
@@ -297,7 +272,6 @@ class KioscoApp(tk.Tk):
         RoundedButton(nav, "Salir", self.show_login_frame, width=150, height=32, color="#EF4444", bg_color="#111827").pack(side="bottom", pady=20)
 
     def show_admin_orders_frame(self):
-        """ PANTALLA ADMIN 1: Monitoreo y mutación de estados de los pedidos """
         self.cambiar_pantalla("admin_orders")
         self.dibujar_menu_navegacion_admin()
         
@@ -319,7 +293,6 @@ class KioscoApp(tk.Tk):
         self.tree_admin_pedidos.column("Estado", width=100)
         self.tree_admin_pedidos.pack(fill="both", expand=True)
 
-        # Botonera de control de Estados
         btn_bar = tk.Frame(derecha, bg="#FFFFFF")
         btn_bar.pack(fill="x", pady=15)
         
@@ -338,7 +311,6 @@ class KioscoApp(tk.Tk):
         self.refrescar_pedidos_admin()
 
     def show_admin_stock_frame(self):
-        """ PANTALLA ADMIN 2: Alta y control de inventarios """
         self.cambiar_pantalla("admin_stock")
         self.dibujar_menu_navegacion_admin()
         
@@ -358,7 +330,6 @@ class KioscoApp(tk.Tk):
         self.tree_admin_stock.column("Precio", width=80)
         self.tree_admin_stock.pack(fill="both", expand=True)
 
-        # Formulario para añadir nuevos productos
         f_add = tk.LabelFrame(derecha, text="Insertar / Reabastecer Producto Nuevo", bg="#FFFFFF", padx=10, pady=10)
         f_add.pack(fill="x", pady=15)
         
