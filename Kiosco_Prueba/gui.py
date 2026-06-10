@@ -154,6 +154,7 @@ class KioscoApp(tk.Tk):
         main_body.columnconfigure(0, weight=3)
         main_body.columnconfigure(1, weight=2)
 
+        # Izquierda: Catálogo
         izq = tk.Frame(main_body, bg="#FFFFFF")
         izq.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#FFFFFF").pack(anchor="w", pady=5)
@@ -174,36 +175,30 @@ class KioscoApp(tk.Tk):
 
         form = tk.Frame(izq, bg="#FFFFFF")
         form.pack(fill="x", pady=10)
-        tk.Label(form, text="Cant:", bg="#FFFFFF").pack(side="left")
-        
-        e_qty = tk.Entry(form, font=("Arial", 11), width=6)
-        e_qty.pack(side="left", padx=5)
-        e_qty.insert(0, "1")
         
         def agregar_al_carrito():
             sel = self.tree_productos_cliente.selection()
             if not sel: 
-                return
-            try:
-                cantidad = int(e_qty.get().strip())
-                if cantidad <= 0: 
-                    raise ValueError
-            except ValueError:
-                messagebox.showerror("Error", "Cantidad inválida")
+                messagebox.showwarning("Selección", "Por favor, selecciona un producto de la góndola.")
                 return
                 
             item = self.tree_productos_cliente.item(sel[0])['values']
+            p_id = item[0]
+            nombre = item[1]
+            precio = item[2]
             
-            for i, (p_id, _, c_ant, _) in enumerate(self.carrito_actual):
-                if p_id == item[0]:
-                    self.carrito_actual[i] = (p_id, item[1], c_ant + cantidad, item[2])
+            # Sumar una unidad directamente en cada clic
+            for i, (id_c, _, c_ant, _) in enumerate(self.carrito_actual):
+                if id_c == p_id:
+                    self.carrito_actual[i] = (p_id, nombre, c_ant + 1, precio)
                     self.refrescar_tabla_carrito_local()
                     return
-            self.carrito_actual.append((item[0], item[1], cantidad, item[2]))
+            self.carrito_actual.append((p_id, nombre, 1, precio))
             self.refrescar_tabla_carrito_local()
 
-        RoundedButton(form, "🛒 Añadir al Carrito", agregar_al_carrito, width=140, height=30, color="#10B981").pack(side="left", padx=10)
+        RoundedButton(form, "➕ Añadir (+1)", agregar_al_carrito, width=140, height=32, color="#10B981").pack(side="left")
 
+        # Derecha: Carrito
         der = tk.Frame(main_body, bg="#F9FAFB", padx=10, pady=10)
         der.grid(row=0, column=1, sticky="nsew")
         tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#F9FAFB").pack(anchor="w")
@@ -221,6 +216,19 @@ class KioscoApp(tk.Tk):
         self.lbl_total = tk.Label(der, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#F9FAFB", fg="#111827")
         self.lbl_total.pack(anchor="e", pady=5)
 
+        def quitar_del_carrito():
+            sel = self.tree_carrito_cliente.selection()
+            if not sel:
+                return
+            idx = self.tree_carrito_cliente.index(sel[0])
+            p_id, nombre, cant, precio = self.carrito_actual[idx]
+            
+            if cant > 1:
+                self.carrito_actual[idx] = (p_id, nombre, cant - 1, precio)
+            else:
+                self.carrito_actual.pop(idx)
+            self.refrescar_tabla_carrito_local()
+
         def despachar_carrito_completo():
             if not self.carrito_actual: 
                 messagebox.showwarning("Vacío", "El carrito está vacío.")
@@ -233,14 +241,18 @@ class KioscoApp(tk.Tk):
             self.carrito_actual = []
             self.refrescar_tabla_carrito_local()
 
-        RoundedButton(der, "🚀 Confirmar Pedido", despachar_carrito_completo, width=180, height=36, color="#2563EB", bg_color="#F9FAFB").pack(fill="x", pady=5)
+        btn_container = tk.Frame(der, bg="#F9FAFB")
+        btn_container.pack(fill="x", pady=5)
+
+        RoundedButton(btn_container, "➖ Quitar (-1)", quitar_del_carrito, width=110, height=36, color="#EF4444", bg_color="#F9FAFB").pack(side="left")
+        RoundedButton(btn_container, "🚀 Confirmar Pedido", despachar_carrito_completo, width=160, height=36, color="#2563EB", bg_color="#F9FAFB").pack(side="right")
+        
         self.refrescar_catalogo_cliente()
 
     def refrescar_catalogo_cliente(self):
         if not self.tree_productos_cliente: 
             return
         
-        # Guardamos el ID del producto que el usuario tenía seleccionado
         id_seleccionado = None
         sel = self.tree_productos_cliente.selection()
         if sel:
@@ -251,7 +263,6 @@ class KioscoApp(tk.Tk):
             
         for r in db.obtener_productos():
             nodo = self.tree_productos_cliente.insert("", "end", values=(r[0], r[1], f"${r[3]:.2f}", f"{r[2]} u.", r[4]))
-            # Si coincide con el ID que teníamos, lo volvemos a seleccionar de inmediato
             if id_seleccionado is not None and int(r[0]) == int(id_seleccionado):
                 self.tree_productos_cliente.selection_set(nodo)
 
