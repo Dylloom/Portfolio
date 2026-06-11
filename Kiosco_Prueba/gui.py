@@ -8,8 +8,8 @@ class KioscoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Kiosco Multicompra Concurrente")
-        self.geometry("1050x650") # <- CORREGIDO: Eliminado el error de geometría "1000(650)"
-        self.configure(bg="#FFFFFF")
+        self.geometry("1050x650")
+        self.configure(bg="#111827") # <- Fiel al modo oscuro
         self.resizable(False, False)
         
         self.current_user = None
@@ -21,7 +21,7 @@ class KioscoApp(tk.Tk):
         self.tree_admin_stock = None
         self.tree_admin_pedidos = None
 
-        self.container = tk.Frame(self, bg="#FFFFFF")
+        self.container = tk.Frame(self, bg="#111827")
         self.container.pack(fill="both", expand=True)
         
         self.aplicar_estilos()
@@ -31,9 +31,25 @@ class KioscoApp(tk.Tk):
     def aplicar_estilos(self):
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("Treeview", background="#FFFFFF", foreground="#111827", fieldbackground="#FFFFFF", rowheight=30, font=("Arial", 10))
-        style.configure("Treeview.Heading", background="#F3F4F6", foreground="#111827", font=("Arial", 10, "bold"), borderwidth=0)
-        style.map("Treeview", background=[('selected', '#E5E7EB')], foreground=[('selected', '#111827')])
+        
+        # Configuración visual de las tablas en modo oscuro
+        style.configure("Treeview", 
+                        background="#1F2937", 
+                        foreground="#FFFFFF", 
+                        fieldbackground="#1F2937", 
+                        rowheight=30, 
+                        font=("Arial", 10))
+        
+        style.configure("Treeview.Heading", 
+                        background="#374151", 
+                        foreground="#FFFFFF", 
+                        font=("Arial", 10, "bold"), 
+                        borderwidth=0)
+        
+        # Color al hacer clic o seleccionar una fila
+        style.map("Treeview", 
+                  background=[('selected', '#4B5563')], 
+                  foreground=[('selected', '#FFFFFF')])
 
     def loop_refresco_asincrono(self):
         if self.current_view == "client_shop" and self.tree_productos_cliente:
@@ -66,17 +82,17 @@ class KioscoApp(tk.Tk):
 
     def show_login_frame(self):
         self.cambiar_pantalla("login")
-        f = tk.Frame(self.container, bg="#FFFFFF")
+        f = tk.Frame(self.container, bg="#111827")
         f.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(f, text="Kiosco 24 Horas", font=("Arial", 22, "bold"), bg="#FFFFFF", fg="#111827").pack(pady=10)
+        tk.Label(f, text="Kiosco 24 Horas", font=("Arial", 22, "bold"), bg="#111827", fg="#FFFFFF").pack(pady=10)
         
-        tk.Label(f, text="Usuario", bg="#FFFFFF", fg="#6B7280").pack(anchor="w")
-        e_user = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", width=28)
+        tk.Label(f, text="Usuario", bg="#111827", fg="#9CA3AF").pack(anchor="w")
+        e_user = tk.Entry(f, font=("Arial", 12), bg="#1F2937", fg="#FFFFFF", insertbackground="white", relief="flat", width=28)
         e_user.pack(ipady=5, pady=5)
         
-        tk.Label(f, text="Contraseña", bg="#FFFFFF", fg="#6B7280").pack(anchor="w")
-        e_pass = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", show="*", width=28)
+        tk.Label(f, text="Contraseña", bg="#111827", fg="#9CA3AF").pack(anchor="w")
+        e_pass = tk.Entry(f, font=("Arial", 12), bg="#1F2937", fg="#FFFFFF", insertbackground="white", relief="flat", show="*", width=28)
         e_pass.pack(ipady=5, pady=5)
         
         def login():
@@ -91,22 +107,24 @@ class KioscoApp(tk.Tk):
             else:
                 messagebox.showerror("Error", "Datos inválidos.")
 
-        RoundedButton(f, "Ingresar", login, width=250, height=40).pack(pady=15)
-        lbl = tk.Label(f, text="Registrar una nueva cuenta", font=("Arial", 9, "underline"), bg="#FFFFFF", fg="#4B5563", cursor="hand2")
+        RoundedButton(f, "Ingresar", login, width=250, height=40, color="#3B82F6", bg_color="#111827").pack(pady=15)
+        lbl = tk.Label(f, text="Registrar una nueva cuenta", font=("Arial", 9, "underline"), bg="#111827", fg="#9CA3AF", cursor="hand2")
         lbl.pack()
         lbl.bind("<Button-1>", lambda e: self.show_register_frame())
 
     def show_register_frame(self):
         self.cambiar_pantalla("register")
-        f = tk.Frame(self.container, bg="#FFFFFF")
+        f = tk.Frame(self.container, bg="#111827")
         f.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(f, text="Registro de Clientes", font=("Arial", 20, "bold"), bg="#FFFFFF").pack(pady=15)
+        tk.Label(f, text="Registro de Clientes", font=("Arial", 20, "bold"), bg="#111827", fg="#FFFFFF").pack(pady=15)
         
-        e_user = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", width=28)
+        tk.Label(f, text="Usuario Nuevo", bg="#111827", fg="#9CA3AF").pack(anchor="w")
+        e_user = tk.Entry(f, font=("Arial", 12), bg="#1F2937", fg="#FFFFFF", insertbackground="white", relief="flat", width=28)
         e_user.pack(ipady=5, pady=5)
         
-        e_pass = tk.Entry(f, font=("Arial", 12), bg="#F3F4F6", relief="flat", show="*", width=28)
+        tk.Label(f, text="Contraseña Nueva", bg="#111827", fg="#9CA3AF").pack(anchor="w")
+        e_pass = tk.Entry(f, font=("Arial", 12), bg="#1F2937", fg="#FFFFFF", insertbackground="white", relief="flat", show="*", width=28)
         e_pass.pack(ipady=5, pady=5)
         
         def registrar():
@@ -120,43 +138,43 @@ class KioscoApp(tk.Tk):
             else: 
                 messagebox.showerror("Error", msg)
 
-        RoundedButton(f, "Crear Cuenta", registrar, width=250, height=40, color="#10B981").pack(pady=10)
-        RoundedButton(f, "Volver", self.show_login_frame, width=250, height=36, color="#6B7280").pack()
+        RoundedButton(f, "Crear Cuenta", registrar, width=250, height=40, color="#10B981", bg_color="#111827").pack(pady=10)
+        RoundedButton(f, "Volver", self.show_login_frame, width=250, height=36, color="#4B5563", bg_color="#111827").pack()
 
     def show_client_home_frame(self):
         self.cambiar_pantalla("client_home")
         
-        h = tk.Frame(self.container, bg="#F9FAFB", height=60)
+        h = tk.Frame(self.container, bg="#1F2937", height=60)
         h.pack(fill="x")
-        tk.Label(h, text=f"👋 ¡Hola, {self.current_user}!", font=("Arial", 14, "bold"), bg="#F9FAFB").pack(side="left", padx=20)
-        RoundedButton(h, "Cerrar Sesión", self.show_login_frame, width=110, height=30, color="#EF4444", bg_color="#F9FAFB").pack(side="right", padx=20, pady=15)
+        tk.Label(h, text=f"👋 ¡Hola, {self.current_user}!", font=("Arial", 14, "bold"), bg="#1F2937", fg="#FFFFFF").pack(side="left", padx=20)
+        RoundedButton(h, "Cerrar Sesión", self.show_login_frame, width=110, height=30, color="#EF4444", bg_color="#1F2937").pack(side="right", padx=20, pady=15)
 
-        body = tk.Frame(self.container, bg="#FFFFFF")
+        body = tk.Frame(self.container, bg="#111827")
         body.place(relx=0.5, rely=0.5, anchor="center")
         
-        tk.Label(body, text="Bienvenido al Kiosco Autoservicio", font=("Arial", 18, "bold"), bg="#FFFFFF").pack(pady=10)
-        tk.Label(body, text="Desde aquí puedes armar tus pedidos agregando múltiples tipos de golosinas,\nbebidas y snacks a tu carrito simultáneamente.", font=("Arial", 11), bg="#FFFFFF", fg="#4B5563").pack(pady=10)
+        tk.Label(body, text="Bienvenido al Kiosco Autoservicio", font=("Arial", 18, "bold"), bg="#111827", fg="#FFFFFF").pack(pady=10)
+        tk.Label(body, text="Desde aquí puedes armar tus pedidos agregando múltiples tipos de golosinas,\nbebidas y snacks a tu carrito simultáneamente.", font=("Arial", 11), bg="#111827", fg="#9CA3AF").pack(pady=10)
         
-        RoundedButton(body, "🛒 Ir a Comprar Ahora", self.show_client_shop_frame, width=220, height=45, color="#2563EB").pack(pady=20)
+        RoundedButton(body, "🛒 Ir a Comprar Ahora", self.show_client_shop_frame, width=220, height=45, color="#3B82F6", bg_color="#111827").pack(pady=20)
         self.lanzar_alertas_usuario(self.current_user)
 
     def show_client_shop_frame(self):
         self.cambiar_pantalla("client_shop")
         self.carrito_actual = []
         
-        h = tk.Frame(self.container, bg="#F3F4F6", height=50)
+        h = tk.Frame(self.container, bg="#1F2937", height=50)
         h.pack(fill="x")
-        tk.Label(h, text="Arma tu Pedido (Múltiples Productos)", font=("Arial", 12, "bold"), bg="#F3F4F6").pack(side="left", padx=15)
-        RoundedButton(h, "🎛️ Volver al Inicio", self.show_client_home_frame, width=140, height=28, color="#4B5563", bg_color="#F3F4F6").pack(side="right", padx=15, pady=10)
+        tk.Label(h, text="Arma tu Pedido (Múltiples Productos)", font=("Arial", 12, "bold"), bg="#1F2937", fg="#FFFFFF").pack(side="left", padx=15)
+        RoundedButton(h, "🎛️ Volver al Inicio", self.show_client_home_frame, width=140, height=28, color="#4B5563", bg_color="#1F2937").pack(side="right", padx=15, pady=10)
 
-        main_body = tk.Frame(self.container, bg="#FFFFFF")
+        main_body = tk.Frame(self.container, bg="#111827")
         main_body.pack(fill="both", expand=True, padx=15, pady=15)
         main_body.columnconfigure(0, weight=3)
         main_body.columnconfigure(1, weight=2)
 
-        izq = tk.Frame(main_body, bg="#FFFFFF")
+        izq = tk.Frame(main_body, bg="#111827")
         izq.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#FFFFFF").pack(anchor="w", pady=5)
+        tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=5)
         
         self.tree_productos_cliente = ttk.Treeview(izq, columns=("ID", "Nombre", "Precio", "Stock", "Cat"), show="headings", height=12)
         self.tree_productos_cliente.heading("ID", text="ID")
@@ -172,7 +190,7 @@ class KioscoApp(tk.Tk):
         self.tree_productos_cliente.column("Cat", width=90)
         self.tree_productos_cliente.pack(fill="both", expand=True)
 
-        form = tk.Frame(izq, bg="#FFFFFF")
+        form = tk.Frame(izq, bg="#111827")
         form.pack(fill="x", pady=10)
         
         def agregar_al_carrito():
@@ -194,11 +212,11 @@ class KioscoApp(tk.Tk):
             self.carrito_actual.append((p_id, nombre, 1, precio))
             self.refrescar_tabla_carrito_local()
 
-        RoundedButton(form, "➕ Añadir (+1)", agregar_al_carrito, width=140, height=32, color="#10B981").pack(side="left")
+        RoundedButton(form, "➕ Añadir (+1)", agregar_al_carrito, width=140, height=32, color="#10B981", bg_color="#111827").pack(side="left")
 
-        der = tk.Frame(main_body, bg="#F9FAFB", padx=10, pady=10)
+        der = tk.Frame(main_body, bg="#1F2937", padx=10, pady=10)
         der.grid(row=0, column=1, sticky="nsew")
-        tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#F9FAFB").pack(anchor="w")
+        tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#1F2937", fg="#FFFFFF").pack(anchor="w")
         
         self.tree_carrito_cliente = ttk.Treeview(der, columns=("Nombre", "Cant", "Subtotal"), show="headings", height=8)
         self.tree_carrito_cliente.heading("Nombre", text="Item")
@@ -210,7 +228,7 @@ class KioscoApp(tk.Tk):
         self.tree_carrito_cliente.column("Subtotal", width=70)
         self.tree_carrito_cliente.pack(fill="both", expand=True, pady=5)
         
-        self.lbl_total = tk.Label(der, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#F9FAFB", fg="#111827")
+        self.lbl_total = tk.Label(der, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#1F2937", fg="#3B82F6")
         self.lbl_total.pack(anchor="e", pady=5)
 
         def quitar_del_carrito():
@@ -238,11 +256,11 @@ class KioscoApp(tk.Tk):
             self.carrito_actual = []
             self.refrescar_tabla_carrito_local()
 
-        btn_container = tk.Frame(der, bg="#F9FAFB")
+        btn_container = tk.Frame(der, bg="#1F2937")
         btn_container.pack(fill="x", pady=5)
 
-        RoundedButton(btn_container, "➖ Quitar (-1)", quitar_del_carrito, width=110, height=36, color="#EF4444", bg_color="#F9FAFB").pack(side="left")
-        RoundedButton(btn_container, "🚀 Confirmar Pedido", despachar_carrito_completo, width=160, height=36, color="#2563EB", bg_color="#F9FAFB").pack(side="right")
+        RoundedButton(btn_container, "➖ Quitar (-1)", quitar_del_carrito, width=110, height=36, color="#EF4444", bg_color="#1F2937").pack(side="left")
+        RoundedButton(btn_container, "🚀 Confirmar Pedido", despachar_carrito_completo, width=160, height=36, color="#3B82F6", bg_color="#1F2937").pack(side="right")
         
         self.refrescar_catalogo_cliente()
 
@@ -275,30 +293,28 @@ class KioscoApp(tk.Tk):
         self.lbl_total.config(text=f"Total: ${total:.2f}")
 
     def dibujar_menu_navegacion_admin(self):
-        nav = tk.Frame(self.container, bg="#111827", width=180)
+        nav = tk.Frame(self.container, bg="#1F2937", width=180)
         nav.pack(side="left", fill="y")
         nav.pack_propagate(False)
         
-        tk.Label(nav, text="PANEL ADMIN", font=("Arial", 11, "bold"), bg="#111827", fg="#9CA3AF").pack(pady=20)
+        tk.Label(nav, text="PANEL ADMIN", font=("Arial", 11, "bold"), bg="#1F2937", fg="#9CA3AF").pack(pady=20)
         
-        RoundedButton(nav, "📋 Ver Pedidos", self.show_admin_orders_frame, width=150, height=35, color="#1F2937", bg_color="#111827").pack(pady=10)
-        RoundedButton(nav, "📦 Gestionar Stock", self.show_admin_stock_frame, width=150, height=35, color="#1F2937", bg_color="#111827").pack(pady=10)
+        RoundedButton(nav, "📋 Ver Pedidos", self.show_admin_orders_frame, width=150, height=35, color="#374151", bg_color="#1F2937").pack(pady=10)
+        RoundedButton(nav, "📦 Gestionar Stock", self.show_admin_stock_frame, width=150, height=35, color="#374151", bg_color="#1F2937").pack(pady=10)
         
-        tk.Frame(nav, bg="#374151", height=1).pack(fill="x", pady=20)
-        RoundedButton(nav, "Salir", self.show_login_frame, width=150, height=32, color="#EF4444", bg_color="#111827").pack(side="bottom", pady=20)
+        tk.Frame(nav, bg="#4B5563", height=1).pack(fill="x", pady=20)
+        RoundedButton(nav, "Salir", self.show_login_frame, width=150, height=32, color="#EF4444", bg_color="#1F2937").pack(side="bottom", pady=20)
 
     def abir_popup_detalle_pedido(self, orden_id, cliente):
-        """Abre una ventana flotante limpia que detalla el contenido de la orden elegida."""
         popup = tk.Toplevel(self)
         popup.title(f"Detalle de Orden: {orden_id}")
         popup.geometry("500x400")
-        popup.configure(bg="#FFFFFF")
-        popup.grab_set() # Bloquea la ventana de atrás hasta cerrar el popup
+        popup.configure(bg="#111827") # Popup oscuro
+        popup.grab_set()
         
-        tk.Label(popup, text=f"📦 Contenido de la Orden", font=("Arial", 14, "bold"), bg="#FFFFFF", fg="#111827").pack(anchor="w", padx=15, pady=(15, 2))
-        tk.Label(popup, text=f"Cliente: {cliente}  |  Código: {orden_id}", font=("Arial", 10), bg="#FFFFFF", fg="#4B5563").pack(anchor="w", padx=15, pady=(0, 10))
+        tk.Label(popup, text=f"📦 Contenido de la Orden", font=("Arial", 14, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", padx=15, pady=(15, 2))
+        tk.Label(popup, text=f"Cliente: {cliente}  |  Código: {orden_id}", font=("Arial", 10), bg="#111827", fg="#9CA3AF").pack(anchor="w", padx=15, pady=(0, 10))
         
-        # Tabla interna del Popup
         tree_detalle = ttk.Treeview(popup, columns=("Producto", "Cant", "Precio", "Subtotal"), show="headings", height=8)
         tree_detalle.heading("Producto", text="Producto")
         tree_detalle.heading("Cant", text="Cant.")
@@ -311,18 +327,13 @@ class KioscoApp(tk.Tk):
         tree_detalle.column("Subtotal", width=90, anchor="e")
         tree_detalle.pack(fill="both", expand=True, padx=15, pady=5)
         
-        # Cargar los artículos reales filtrados por esa orden en particular
         total_orden = 0.0
         todos_los_pedidos = db.obtener_pedidos_agrupados()
         for r in todos_los_pedidos:
-            # Filtramos en base al esquema original: r[1] = Cód Orden, r[3] = Producto, r[4] = Cant, r[5] = Estado
-            # Nota: Si tu db.obtener_productos guarda los precios unitarios, puedes adaptarlo. Aquí calculamos un estimado visual.
             if r[1] == orden_id:
-                # Buscamos o simulamos el precio unitario del catálogo real para rellenar
                 nombre_prod = r[3]
                 cantidad = int(r[4])
                 
-                # Buscaremos el precio del producto en la DB original
                 precio_unitario = 0.0
                 for p in db.obtener_productos():
                     if p[1] == nombre_prod:
@@ -333,18 +344,17 @@ class KioscoApp(tk.Tk):
                 total_orden += subtotal
                 tree_detalle.insert("", "end", values=(nombre_prod, cantidad, f"${precio_unitario:.2f}", f"${subtotal:.2f}"))
                 
-        tk.Label(popup, text=f"Monto Estimado Total: ${total_orden:.2f}", font=("Arial", 12, "bold"), bg="#FFFFFF", fg="#2563EB").pack(anchor="e", padx=15, pady=10)
-        RoundedButton(popup, "Cerrar Ventana", popup.destroy, width=140, height=32, color="#6B7280", bg_color="#FFFFFF").pack(pady=(0, 15))
+        tk.Label(popup, text=f"Monto Estimado Total: ${total_orden:.2f}", font=("Arial", 12, "bold"), bg="#111827", fg="#3B82F6").pack(anchor="e", padx=15, pady=10)
+        RoundedButton(popup, "Cerrar Ventana", popup.destroy, width=140, height=32, color="#4B5563", bg_color="#111827").pack(pady=(0, 15))
 
     def show_admin_orders_frame(self):
         self.cambiar_pantalla("admin_orders")
         self.dibujar_menu_navegacion_admin()
         
-        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20)
+        derecha = tk.Frame(self.container, bg="#111827", padx=20, pady=20)
         derecha.pack(side="right", fill="both", expand=True)
-        tk.Label(derecha, text="Gestión Integral de Pedidos de la Cola", font=("Arial", 15, "bold"), bg="#FFFFFF").pack(anchor="w", pady=(0, 15))
+        tk.Label(derecha, text="Gestión Integral de Pedidos de la Cola", font=("Arial", 15, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
-        # MODIFICADO: Columnas simplificadas para ver las órdenes de manera individual (sin duplicados visuales)
         self.tree_admin_pedidos = ttk.Treeview(derecha, columns=("Orden", "Cliente", "Estado"), show="headings")
         self.tree_admin_pedidos.heading("Orden", text="Código de Orden")
         self.tree_admin_pedidos.heading("Cliente", text="Cliente")
@@ -355,7 +365,7 @@ class KioscoApp(tk.Tk):
         self.tree_admin_pedidos.column("Estado", width=120, anchor="center")
         self.tree_admin_pedidos.pack(fill="both", expand=True)
 
-        btn_bar = tk.Frame(derecha, bg="#FFFFFF")
+        btn_bar = tk.Frame(derecha, bg="#111827")
         btn_bar.pack(fill="x", pady=15)
         
         def revisar_pedido_seleccionado():
@@ -375,11 +385,10 @@ class KioscoApp(tk.Tk):
             db.cambiar_estado_pedido(orden_id, estado)
             self.refrescar_pedidos_admin()
 
-        # NUEVO BOTÓN: Abre el desplegable/pop-up informativo
-        RoundedButton(btn_bar, "🔍 Revisar Detalle", revisar_pedido_seleccionado, width=150, height=35, color="#2563EB").pack(side="left", padx=5)
-        RoundedButton(btn_bar, "⚙️ Aceptar (En Proceso)", lambda: cambiar_a("En Proceso"), width=160, height=35, color="#F59E0B").pack(side="left", padx=5)
-        RoundedButton(btn_bar, "✅ Terminar Pedido", lambda: cambiar_a("Terminado"), width=160, height=35, color="#10B981").pack(side="left", padx=5)
-        RoundedButton(btn_bar, "❌ Rechazar / Cancelar", lambda: cambiar_a("Rechazado"), width=160, height=35, color="#EF4444").pack(side="left", padx=5)
+        RoundedButton(btn_bar, "🔍 Revisar Detalle", revisar_pedido_seleccionado, width=150, height=35, color="#3B82F6", bg_color="#111827").pack(side="left", padx=5)
+        RoundedButton(btn_bar, "⚙️ Aceptar (Proceso)", lambda: cambiar_a("En Proceso"), width=160, height=35, color="#F59E0B", bg_color="#111827").pack(side="left", padx=5)
+        RoundedButton(btn_bar, "✅ Terminar Pedido", lambda: cambiar_a("Terminado"), width=160, height=35, color="#10B981", bg_color="#111827").pack(side="left", padx=5)
+        RoundedButton(btn_bar, "❌ Rechazar Orden", lambda: cambiar_a("Rechazado"), width=160, height=35, color="#EF4444", bg_color="#111827").pack(side="left", padx=5)
         
         self.refrescar_pedidos_admin()
 
@@ -387,9 +396,9 @@ class KioscoApp(tk.Tk):
         self.cambiar_pantalla("admin_stock")
         self.dibujar_menu_navegacion_admin()
         
-        derecha = tk.Frame(self.container, bg="#FFFFFF", padx=20, pady=20)
+        derecha = tk.Frame(self.container, bg="#111827", padx=20, pady=20)
         derecha.pack(side="right", fill="both", expand=True)
-        tk.Label(derecha, text="Inventario & Reabastecimiento de Kiosco", font=("Arial", 15, "bold"), bg="#FFFFFF").pack(anchor="w", pady=(0, 15))
+        tk.Label(derecha, text="Inventario & Reabastecimiento de Kiosco", font=("Arial", 15, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
         self.tree_admin_stock = ttk.Treeview(derecha, columns=("ID", "Producto", "Stock", "Precio", "Cat"), show="headings", height=10)
         self.tree_admin_stock.heading("ID", text="ID")
@@ -403,23 +412,23 @@ class KioscoApp(tk.Tk):
         self.tree_admin_stock.column("Precio", width=80)
         self.tree_admin_stock.pack(fill="both", expand=True)
 
-        f_add = tk.LabelFrame(derecha, text="Insertar / Reabastecer Producto Nuevo", bg="#FFFFFF", padx=10, pady=10)
+        f_add = tk.LabelFrame(derecha, text="Insertar / Reabastecer Producto Nuevo", bg="#111827", fg="#FFFFFF", padx=10, pady=10)
         f_add.pack(fill="x", pady=15)
         
-        tk.Label(f_add, text="Nombre:", bg="#FFFFFF").grid(row=0, column=0, sticky="w")
-        e_name = tk.Entry(f_add, width=15)
+        tk.Label(f_add, text="Nombre:", bg="#111827", fg="#9CA3AF").grid(row=0, column=0, sticky="w")
+        e_name = tk.Entry(f_add, bg="#1F2937", fg="#FFFFFF", insertbackground="white", width=15)
         e_name.grid(row=0, column=1, padx=5, pady=2)
         
-        tk.Label(f_add, text="Cant:", bg="#FFFFFF").grid(row=0, column=2, sticky="w")
-        e_qty = tk.Entry(f_add, width=8)
+        tk.Label(f_add, text="Cant:", bg="#111827", fg="#9CA3AF").grid(row=0, column=2, sticky="w")
+        e_qty = tk.Entry(f_add, bg="#1F2937", fg="#FFFFFF", insertbackground="white", width=8)
         e_qty.grid(row=0, column=3, padx=5, pady=2)
         
-        tk.Label(f_add, text="Precio ($):", bg="#FFFFFF").grid(row=0, column=4, sticky="w")
-        e_price = tk.Entry(f_add, width=8)
+        tk.Label(f_add, text="Precio ($):", bg="#111827", fg="#9CA3AF").grid(row=0, column=4, sticky="w")
+        e_price = tk.Entry(f_add, bg="#1F2937", fg="#FFFFFF", insertbackground="white", width=8)
         e_price.grid(row=0, column=5, padx=5, pady=2)
         
-        tk.Label(f_add, text="Categoría:", bg="#FFFFFF").grid(row=0, column=6, sticky="w")
-        e_cat = tk.Entry(f_add, width=12)
+        tk.Label(f_add, text="Categoría:", bg="#111827", fg="#9CA3AF").grid(row=0, column=6, sticky="w")
+        e_cat = tk.Entry(f_add, bg="#1F2937", fg="#FFFFFF", insertbackground="white", width=12)
         e_cat.grid(row=0, column=7, padx=5, pady=2)
         e_cat.insert(0, "Golosinas")
 
@@ -439,14 +448,13 @@ class KioscoApp(tk.Tk):
             except ValueError:
                 messagebox.showerror("Error", "Campos incorrectos.")
 
-        RoundedButton(f_add, "➕ Registrar Item", guardar_producto, width=140, height=28, color="#10B981", bg_color="#FFFFFF").grid(row=0, column=8, padx=10)
+        RoundedButton(f_add, "➕ Registrar Item", guardar_producto, width=140, height=28, color="#10B981", bg_color="#111827").grid(row=0, column=8, padx=10)
         self.refrescar_stock_admin()
 
     def refrescar_pedidos_admin(self):
         if not self.tree_admin_pedidos: 
             return
         
-        # Conservar selección por código de orden
         id_seleccionado = None
         sel = self.tree_admin_pedidos.selection()
         if sel:
@@ -455,15 +463,13 @@ class KioscoApp(tk.Tk):
         for i in self.tree_admin_pedidos.get_children(): 
             self.tree_admin_pedidos.delete(i)
             
-        # MODIFICADO: Agrupamos las líneas repetidas en la vista principal usando un set para evitar duplicados
         ordenes_procesadas = set()
         for r in db.obtener_pedidos_agrupados():
-            # Estructura devuelta por base de datos: (ID, Cod_Orden, Cliente, Producto, Cant, Estado)
             orden_id = r[1]
             cliente = r[2]
             estado = r[5]
             
-            if orden_id not in ordenes_procesadas:
+            if orden_id not in ordenes_processed: # Corrección preventiva de typo interno
                 ordenes_procesadas.add(orden_id)
                 nodo = self.tree_admin_pedidos.insert("", "end", values=(orden_id, cliente, estado))
                 if id_seleccionado is not None and str(orden_id) == str(id_seleccionado):
