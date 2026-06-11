@@ -158,6 +158,15 @@ class KioscoMonitor:
             conn.commit()
             conn.close()
 
+    # 🛠️ NUEVO MÉTODO DEL MONITOR: Actualizar stock de manera limpia sin duplicar filas
+    def modificar_stock_por_id(self, producto_id, nueva_cantidad):
+        with self._lock:
+            conn = sqlite3.connect(DB_NAME)
+            c = conn.cursor()
+            c.execute("UPDATE productos SET cantidad = ? WHERE id = ?", (nueva_cantidad, producto_id))
+            conn.commit()
+            conn.close()
+
 monitor = KioscoMonitor()
 
 def deamon_procesador_carritos():
@@ -174,6 +183,7 @@ def deamon_procesador_carritos():
 
 threading.Thread(target=deamon_procesador_carritos, daemon=True).start()
 
+# Puentes API vinculados de forma segura con la GUI
 def init_db(): monitor.inicializar_tablas()
 def verificar_login(u, p): return monitor.verificar_login(u, p)
 def registrar_usuario(u, p): return monitor.registrar_usuario(u, p)
@@ -181,5 +191,6 @@ def obtener_productos(): return monitor.obtener_productos()
 def obtener_pedidos_agrupados(): return monitor.obtener_pedidos_agrupados()
 def cambiar_estado_pedido(oid, est): monitor.cambiar_estado_pedido(oid, est)
 def agregar_producto(n, c, p, cat): monitor.agregar_nuevo_producto(n, c, p, cat)
+def actualizar_stock_producto(p_id, n_cant): monitor.modificar_stock_por_id(p_id, n_cant)
 def chequear_alertas(u): return monitor.obtener_notificaciones_usuario(u)
 def encolar_carrito(u, oid, items): order_queue.put((u, oid, items))
