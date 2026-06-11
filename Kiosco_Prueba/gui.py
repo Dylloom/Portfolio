@@ -8,8 +8,8 @@ class KioscoApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Kiosco Multicompra Concurrente")
-        self.geometry("1050x650")
-        self.configure(bg="#111827") # <- Fiel al modo oscuro
+        self.geometry("1080x670") # Ajustado levemente para dar espacio a las barras de scroll
+        self.configure(bg="#111827")
         self.resizable(False, False)
         
         self.current_user = None
@@ -32,7 +32,7 @@ class KioscoApp(tk.Tk):
         style = ttk.Style()
         style.theme_use("clam")
         
-        # Configuración visual de las tablas en modo oscuro
+        # Tablas en modo oscuro
         style.configure("Treeview", 
                         background="#1F2937", 
                         foreground="#FFFFFF", 
@@ -46,10 +46,12 @@ class KioscoApp(tk.Tk):
                         font=("Arial", 10, "bold"), 
                         borderwidth=0)
         
-        # Color al hacer clic o seleccionar una fila
         style.map("Treeview", 
                   background=[('selected', '#4B5563')], 
                   foreground=[('selected', '#FFFFFF')])
+        
+        # Estilo oscuro para los Combobox (Desplegables)
+        style.configure("TCombobox", fieldbackground="#1F2937", background="#374151", foreground="#FFFFFF")
 
     def loop_refresco_asincrono(self):
         if self.current_view == "client_shop" and self.tree_productos_cliente:
@@ -172,11 +174,15 @@ class KioscoApp(tk.Tk):
         main_body.columnconfigure(0, weight=3)
         main_body.columnconfigure(1, weight=2)
 
+        # Izquierda: Catálogo con Barra de Desplazamiento
         izq = tk.Frame(main_body, bg="#111827")
         izq.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         tk.Label(izq, text="Productos en Góndola", font=("Arial", 11, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=5)
         
-        self.tree_productos_cliente = ttk.Treeview(izq, columns=("ID", "Nombre", "Precio", "Stock", "Cat"), show="headings", height=12)
+        f_table_izq = tk.Frame(izq, bg="#111827")
+        f_table_izq.pack(fill="both", expand=True)
+
+        self.tree_productos_cliente = ttk.Treeview(f_table_izq, columns=("ID", "Nombre", "Precio", "Stock", "Cat"), show="headings", height=12)
         self.tree_productos_cliente.heading("ID", text="ID")
         self.tree_productos_cliente.heading("Nombre", text="Producto")
         self.tree_productos_cliente.heading("Precio", text="Precio")
@@ -184,11 +190,16 @@ class KioscoApp(tk.Tk):
         self.tree_productos_cliente.heading("Cat", text="Categoría")
         
         self.tree_productos_cliente.column("ID", width=35)
-        self.tree_productos_cliente.column("Nombre", width=180)
+        self.tree_productos_cliente.column("Nombre", width=160)
         self.tree_productos_cliente.column("Precio", width=70)
         self.tree_productos_cliente.column("Stock", width=60)
         self.tree_productos_cliente.column("Cat", width=90)
-        self.tree_productos_cliente.pack(fill="both", expand=True)
+        
+        # Scrollbar Góndola
+        scroll_izq = ttk.Scrollbar(f_table_izq, orient="vertical", command=self.tree_productos_cliente.yview)
+        self.tree_productos_cliente.configure(yscrollcommand=scroll_izq.set)
+        self.tree_productos_cliente.pack(side="left", fill="both", expand=True)
+        scroll_izq.pack(side="right", fill="y")
 
         form = tk.Frame(izq, bg="#111827")
         form.pack(fill="x", pady=10)
@@ -214,19 +225,28 @@ class KioscoApp(tk.Tk):
 
         RoundedButton(form, "➕ Añadir (+1)", agregar_al_carrito, width=140, height=32, color="#10B981", bg_color="#111827").pack(side="left")
 
+        # Derecha: Carrito con Barra de Desplazamiento
         der = tk.Frame(main_body, bg="#1F2937", padx=10, pady=10)
         der.grid(row=0, column=1, sticky="nsew")
         tk.Label(der, text="Mi Carrito de Compras", font=("Arial", 11, "bold"), bg="#1F2937", fg="#FFFFFF").pack(anchor="w")
         
-        self.tree_carrito_cliente = ttk.Treeview(der, columns=("Nombre", "Cant", "Subtotal"), show="headings", height=8)
+        f_table_der = tk.Frame(der, bg="#1F2937")
+        f_table_der.pack(fill="both", expand=True, pady=5)
+
+        self.tree_carrito_cliente = ttk.Treeview(f_table_der, columns=("Nombre", "Cant", "Subtotal"), show="headings", height=8)
         self.tree_carrito_cliente.heading("Nombre", text="Item")
         self.tree_carrito_cliente.heading("Cant", text="Cant")
         self.tree_carrito_cliente.heading("Subtotal", text="Subtotal")
         
-        self.tree_carrito_cliente.column("Nombre", width=120)
+        self.tree_carrito_cliente.column("Nombre", width=110)
         self.tree_carrito_cliente.column("Cant", width=45)
         self.tree_carrito_cliente.column("Subtotal", width=70)
-        self.tree_carrito_cliente.pack(fill="both", expand=True, pady=5)
+        
+        # Scrollbar Carrito
+        scroll_der = ttk.Scrollbar(f_table_der, orient="vertical", command=self.tree_carrito_cliente.yview)
+        self.tree_carrito_cliente.configure(yscrollcommand=scroll_der.set)
+        self.tree_carrito_cliente.pack(side="left", fill="both", expand=True)
+        scroll_der.pack(side="right", fill="y")
         
         self.lbl_total = tk.Label(der, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#1F2937", fg="#3B82F6")
         self.lbl_total.pack(anchor="e", pady=5)
@@ -267,7 +287,6 @@ class KioscoApp(tk.Tk):
     def refrescar_catalogo_cliente(self):
         if not self.tree_productos_cliente: 
             return
-        
         id_seleccionado = None
         sel = self.tree_productos_cliente.selection()
         if sel:
@@ -308,24 +327,32 @@ class KioscoApp(tk.Tk):
     def abir_popup_detalle_pedido(self, orden_id, cliente):
         popup = tk.Toplevel(self)
         popup.title(f"Detalle de Orden: {orden_id}")
-        popup.geometry("500x400")
-        popup.configure(bg="#111827") # Popup oscuro
+        popup.geometry("520x400")
+        popup.configure(bg="#111827")
         popup.grab_set()
         
         tk.Label(popup, text=f"📦 Contenido de la Orden", font=("Arial", 14, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", padx=15, pady=(15, 2))
         tk.Label(popup, text=f"Cliente: {cliente}  |  Código: {orden_id}", font=("Arial", 10), bg="#111827", fg="#9CA3AF").pack(anchor="w", padx=15, pady=(0, 10))
         
-        tree_detalle = ttk.Treeview(popup, columns=("Producto", "Cant", "Precio", "Subtotal"), show="headings", height=8)
+        f_pop = tk.Frame(popup, bg="#111827")
+        f_pop.pack(fill="both", expand=True, padx=15, pady=5)
+
+        tree_detalle = ttk.Treeview(f_pop, columns=("Producto", "Cant", "Precio", "Subtotal"), show="headings", height=8)
         tree_detalle.heading("Producto", text="Producto")
         tree_detalle.heading("Cant", text="Cant.")
         tree_detalle.heading("Precio", text="Precio Unit.")
         tree_detalle.heading("Subtotal", text="Subtotal")
         
-        tree_detalle.column("Producto", width=180)
+        tree_detalle.column("Producto", width=160)
         tree_detalle.column("Cant", width=60, anchor="center")
         tree_detalle.column("Precio", width=90, anchor="e")
         tree_detalle.column("Subtotal", width=90, anchor="e")
-        tree_detalle.pack(fill="both", expand=True, padx=15, pady=5)
+        
+        # Scrollbar Popup
+        scroll_pop = ttk.Scrollbar(f_pop, orient="vertical", command=tree_detalle.yview)
+        tree_detalle.configure(yscrollcommand=scroll_pop.set)
+        tree_detalle.pack(side="left", fill="both", expand=True)
+        scroll_pop.pack(side="right", fill="y")
         
         total_orden = 0.0
         todos_los_pedidos = db.obtener_pedidos_agrupados()
@@ -355,7 +382,10 @@ class KioscoApp(tk.Tk):
         derecha.pack(side="right", fill="both", expand=True)
         tk.Label(derecha, text="Gestión Integral de Pedidos de la Cola", font=("Arial", 15, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
-        self.tree_admin_pedidos = ttk.Treeview(derecha, columns=("Orden", "Cliente", "Estado"), show="headings")
+        f_orders = tk.Frame(derecha, bg="#111827")
+        f_orders.pack(fill="both", expand=True)
+
+        self.tree_admin_pedidos = ttk.Treeview(f_orders, columns=("Orden", "Cliente", "Estado"), show="headings")
         self.tree_admin_pedidos.heading("Orden", text="Código de Orden")
         self.tree_admin_pedidos.heading("Cliente", text="Cliente")
         self.tree_admin_pedidos.heading("Estado", text="Estado de la Orden")
@@ -363,7 +393,12 @@ class KioscoApp(tk.Tk):
         self.tree_admin_pedidos.column("Orden", width=150, anchor="center")
         self.tree_admin_pedidos.column("Cliente", width=150, anchor="center")
         self.tree_admin_pedidos.column("Estado", width=120, anchor="center")
-        self.tree_admin_pedidos.pack(fill="both", expand=True)
+        
+        # Scrollbar Pedidos Admin
+        scroll_orders = ttk.Scrollbar(f_orders, orient="vertical", command=self.tree_admin_pedidos.yview)
+        self.tree_admin_pedidos.configure(yscrollcommand=scroll_orders.set)
+        self.tree_admin_pedidos.pack(side="left", fill="both", expand=True)
+        scroll_orders.pack(side="right", fill="y")
 
         btn_bar = tk.Frame(derecha, bg="#111827")
         btn_bar.pack(fill="x", pady=15)
@@ -400,7 +435,10 @@ class KioscoApp(tk.Tk):
         derecha.pack(side="right", fill="both", expand=True)
         tk.Label(derecha, text="Inventario & Reabastecimiento de Kiosco", font=("Arial", 15, "bold"), bg="#111827", fg="#FFFFFF").pack(anchor="w", pady=(0, 15))
         
-        self.tree_admin_stock = ttk.Treeview(derecha, columns=("ID", "Producto", "Stock", "Precio", "Cat"), show="headings", height=10)
+        f_stock = tk.Frame(derecha, bg="#111827")
+        f_stock.pack(fill="both", expand=True)
+
+        self.tree_admin_stock = ttk.Treeview(f_stock, columns=("ID", "Producto", "Stock", "Precio", "Cat"), show="headings", height=10)
         self.tree_admin_stock.heading("ID", text="ID")
         self.tree_admin_stock.heading("Producto", text="Producto")
         self.tree_admin_stock.heading("Stock", text="Stock")
@@ -410,8 +448,39 @@ class KioscoApp(tk.Tk):
         self.tree_admin_stock.column("ID", width=40)
         self.tree_admin_stock.column("Stock", width=80)
         self.tree_admin_stock.column("Precio", width=80)
-        self.tree_admin_stock.pack(fill="both", expand=True)
+        
+        # Scrollbar Stock Admin
+        scroll_stock = ttk.Scrollbar(f_stock, orient="vertical", command=self.tree_admin_stock.yview)
+        self.tree_admin_stock.configure(yscrollcommand=scroll_stock.set)
+        self.tree_admin_stock.pack(side="left", fill="both", expand=True)
+        scroll_stock.pack(side="right", fill="y")
 
+        # NUEVA BARRA DE HERRAMIENTAS: Para rebajar stock del ítem seleccionado a mano
+        f_herramientas = tk.Frame(derecha, bg="#111827")
+        f_herramientas.pack(fill="x", pady=5)
+        
+        def descontar_unidad_mano():
+            sel = self.tree_admin_stock.selection()
+            if not sel:
+                messagebox.showwarning("Atención", "Por favor, selecciona un producto del inventario para descontar stock.")
+                return
+            item = self.tree_admin_stock.item(sel[0])['values']
+            p_id = item[0]
+            nombre = item[1]
+            stock_actual = int(str(item[2]).replace(' u.', ''))
+            precio = float(str(item[3]).replace('$', ''))
+            categoria = item[4]
+            
+            if stock_actual > 0:
+                # Modifica el stock directamente actualizando el producto con stock_actual - 1
+                db.agregar_producto(nombre, stock_actual - 1, precio, categoria)
+                self.refrescar_stock_admin()
+            else:
+                messagebox.showwarning("Aviso", "El producto ya se encuentra en 0 unidades.")
+
+        RoundedButton(f_herramientas, "➖ Descontar Stock (-1 u.)", descontar_unidad_mano, width=200, height=30, color="#EF4444", bg_color="#111827").pack(side="left")
+
+        # Sección para agregar/abastecer
         f_add = tk.LabelFrame(derecha, text="Insertar / Reabastecer Producto Nuevo", bg="#111827", fg="#FFFFFF", padx=10, pady=10)
         f_add.pack(fill="x", pady=15)
         
@@ -428,16 +497,18 @@ class KioscoApp(tk.Tk):
         e_price.grid(row=0, column=5, padx=5, pady=2)
         
         tk.Label(f_add, text="Categoría:", bg="#111827", fg="#9CA3AF").grid(row=0, column=6, sticky="w")
-        e_cat = tk.Entry(f_add, bg="#1F2937", fg="#FFFFFF", insertbackground="white", width=12)
-        e_cat.grid(row=0, column=7, padx=5, pady=2)
-        e_cat.insert(0, "Golosinas")
+        
+        # MODIFICADO: Cambiado cuadro de texto por un desplegable (Combobox) prefijado
+        cb_cat = ttk.Combobox(f_add, values=["Golosinas", "Bebidas", "Snacks", "Galletitas"], width=12, state="readonly")
+        cb_cat.grid(row=0, column=7, padx=5, pady=2)
+        cb_cat.current(0) # Golosinas por defecto
 
         def guardar_producto():
             try:
                 name = e_name.get().strip()
                 qty = int(e_qty.get().strip())
                 price = float(e_price.get().strip())
-                cat = e_cat.get().strip()
+                cat = cb_cat.get()
                 if not name or qty < 0 or price < 0: 
                     raise ValueError
                 db.agregar_producto(name, qty, price, cat)
@@ -464,12 +535,14 @@ class KioscoApp(tk.Tk):
             self.tree_admin_pedidos.delete(i)
             
         ordenes_procesadas = set()
+        # CORREGIDO: Arreglado bug de tipeo interno que impedía limpiar y refrescar el árbol correctamente
         for r in db.obtener_pedidos_agrupados():
             orden_id = r[1]
             cliente = r[2]
             estado = r[5]
             
-            if orden_id not in ordenes_processed: # Corrección preventiva de typo interno
+            # Solo se listan los pedidos que siguen pendientes o en proceso
+            if orden_id not in ordenes_procesadas:
                 ordenes_procesadas.add(orden_id)
                 nodo = self.tree_admin_pedidos.insert("", "end", values=(orden_id, cliente, estado))
                 if id_seleccionado is not None and str(orden_id) == str(id_seleccionado):
