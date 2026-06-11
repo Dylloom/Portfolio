@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia de la Computación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        /* Timeline Base Styles */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Center Line */
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #cbd5e1;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+            border-radius: 4px;
+        }
+
+        /* Container for each event */
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+            box-sizing: border-box;
+        }
+
+        /* Left and Right Item Positioning */
+        .left { left: 0; }
+        .right { left: 50%; }
+
+        /* The Circle/Dot */
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            right: -12px;
+            background-color: white;
+            border: 4px solid #3b82f6;
+            top: 28px;
+            border-radius: 50%;
+            z-index: 1;
+            box-shadow: 0 0 0 4px #eff6ff;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover::after {
+            transform: scale(1.2);
+            background-color: #3b82f6;
+        }
+
+        .right::after {
+            left: -12px;
+        }
+
+        /* The Content Card */
+        .content {
+            padding: 30px;
+            background-color: white;
+            position: relative;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Colored top borders for differentiation */
+        .border-t-1 { border-top: 6px solid #ef4444; } /* Red */
+        .border-t-2 { border-top: 6px solid #f97316; } /* Orange */
+        .border-t-3 { border-top: 6px solid #eab308; } /* Yellow */
+        .border-t-4 { border-top: 6px solid #22c55e; } /* Green */
+        .border-t-5 { border-top: 6px solid #3b82f6; } /* Blue */
+        .border-t-6 { border-top: 6px solid #8b5cf6; } /* Purple */
+
+        /* Responsive Design: Stack elements on smaller screens */
+        @media screen and (max-width: 768px) {
+            .timeline::after { left: 31px; }
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 0px;
+            }
+            .timeline-item::after { left: 19px; }
+            .right { left: 0%; }
+        }
+
+        /* Accordion style detail sections */
+        .detail-section h4 {
+            color: #4b5563;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .detail-section h4 svg {
+            margin-right: 0.5rem;
+            width: 16px;
+            height: 16px;
+        }
+
+        .detail-box {
+            background-color: #f8fafc;
+            border-left: 3px solid #cbd5e1;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-gray-900 text-white pt-16 pb-12 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">La Evolución de la Computación</h1>
+        <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto font-light">
+            Un recorrido histórico desde los primeros engranajes mecánicos hasta la frontera de la inteligencia artificial y la computación cuántica.
+        </p>
+    </header>
+
+    <div class="timeline mt-8">
+
+        <!-- 1. Los precursores mecánicos -->
+        <div class="timeline-item left">
+            <div class="content border-t-1">
+                <span class="inline-block py-1 px-3 rounded-full bg-red-100 text-red-800 text-xs font-bold mb-4">Etapa 1: Siglos XVIII y XIX</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Los precursores mecánicos</h2>
+                <h3 class="text-md text-red-600 font-medium italic mb-6">Del engranaje a la idea pura</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Contexto histórico
+                        </h4>
+                        <p>Desde la antigüedad, el comercio, la navegación y la astronomía exigían cálculos precisos. El ser humano necesitaba descargar el esfuerzo mental del cálculo rutinario. Durante la Revolución Industrial (siglos XVIII y XIX), la necesidad de automatizar procesos físicos inspiró la idea de automatizar el pensamiento matemático.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-red-300">
+                        <h4 class="text-red-700">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Tecnología clave
+                        </h4>
+                        <p>Todo comenzó con el <strong>ábaco</strong> en la antigua Mesopotamia, una herramienta física para llevar la cuenta. Sin embargo, el salto real hacia la "computación" ocurrió en el siglo XIX. El matemático <strong>Charles Babbage</strong> diseñó la <strong>Máquina Analítica (1837)</strong>. Imaginen una máquina del tamaño de una locomotora, impulsada por vapor, llena de miles de engranajes y palancas. La genialidad de Babbage fue concebir una arquitectura que hoy todos usamos: una unidad de procesamiento (el "molino"), una memoria (el "almacén") y dispositivos de entrada/salida mediante <strong>tarjetas perforadas</strong> (inspiradas en el telar de Jacquard).</p>
+                        <p class="mt-2">Junto a él estaba <strong>Ada Lovelace</strong>, una brillante matemática que se dio cuenta de algo vital: si esta máquina podía manipular números, y los números podían representar otras cosas (como notas musicales o letras), la máquina podía manipular cualquier información. Ella escribió el <strong>primer algoritmo (1843)</strong> destinado a ser procesado por una máquina, convirtiéndose en la primera programadora de la historia.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Impacto
+                        </h4>
+                        <p>Aunque la Máquina Analítica nunca se terminó de construir en su época por limitaciones metalúrgicas, <strong>estableció la arquitectura conceptual</strong> de todas las computadoras futuras. Nos enseñó el "qué" debía tener una computadora, aunque el "cómo" (la electrónica) tardaría un siglo en llegar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. La era electromecánica -->
+        <div class="timeline-item right">
+            <div class="content border-t-2">
+                <span class="inline-block py-1 px-3 rounded-full bg-orange-100 text-orange-800 text-xs font-bold mb-4">Etapa 2: Primera mitad del siglo XX</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">La era electromecánica y la IIGM</h2>
+                <h3 class="text-md text-orange-600 font-medium italic mb-6">El salto de la materia a la lógica</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Contexto histórico</h4>
+                        <p>Nos encontramos en la primera mitad del siglo XX, culminando en la <strong>Segunda Guerra Mundial</strong>. La artillería necesitaba tablas de balística precisas y, lo más crítico, los ejércitos necesitaban codificar y descifrar mensajes enemigos. Ya no era solo calcular; era una cuestión de supervivencia nacional.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-orange-300">
+                        <h4 class="text-orange-700"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0..."></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Tecnología clave</h4>
+                        <p>Los pesados engranajes mecánicos fueron reemplazados por <strong>relés electromecánicos</strong> (interruptores que se abren o cierran usando magnetismo). Piensen en ellos como pequeños puentes levadizos que dejan pasar o detienen la corriente eléctrica.</p>
+                        <p class="mt-2">En Alemania, <strong>Konrad Zuse</strong> creó la <strong>Z3 (1941)</strong>, la primera máquina programable y completamente automática, utilizando el sistema binario (ceros y unos). Simultáneamente, en el Reino Unido, el genio matemático <strong>Alan Turing</strong> había formulado teóricamente la <strong>Máquina de Turing (1936)</strong>, demostrando matemáticamente que una máquina universal podía resolver cualquier problema lógico si se le daban las instrucciones correctas. Durante la guerra, Turing y su equipo construyeron la máquina <strong>Bombe</strong> y luego se desarrolló <strong>Colossus (1943)</strong> (que ya usaba válvulas) para descifrar el código Enigma alemán. En EE.UU., Harvard e IBM construyeron la <strong>Mark I (1944)</strong>, un monstruo electromecánico de 15 metros de largo.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Impacto</h4>
+                        <p>Esta era demostró que las máquinas podían procesar <strong>símbolos y lógica pura</strong>, no solo aritmética. Además, el uso de la electricidad y el sistema binario sentaron las bases definitivas para el lenguaje digital de las máquinas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. La Primera Generación -->
+        <div class="timeline-item left">
+            <div class="content border-t-3">
+                <span class="inline-block py-1 px-3 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold mb-4">Etapa 3: Postguerra</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">La Primera Generación</h2>
+                <h3 class="text-md text-yellow-600 font-medium italic mb-6">Tubos de vacío: Velocidad electrónica y la memoria</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Contexto histórico</h4>
+                        <p>Terminada la guerra, comienza la Guerra Fría. Los gobiernos (principalmente EE.UU.) necesitaban simular reacciones atómicas, calcular censos masivos y predecir el clima. Los relés electromecánicos eran demasiado lentos y hacían mucho ruido ("clac-clac-clac"). Se necesitaba la velocidad de los electrones.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-yellow-300">
+                        <h4 class="text-yellow-700"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>Tecnología clave</h4>
+                        <p>El salto técnico fue el <strong>tubo de vacío</strong> (o válvula termoiónica). Imaginen una bombilla de luz tradicional que, en lugar de iluminar, funciona como un interruptor electrónico que deja pasar o bloquea los electrones, pero <strong>sin partes móviles</strong>. Al no haber piezas mecánicas, la velocidad de cálculo se multiplicó por miles.</p>
+                        <p class="mt-2">Aquí nace la <strong>ENIAC (1945)</strong>, la primera computadora electrónica de propósito general, que ocupaba una habitación entera y consumía tanta energía que bajaba las luces de Filadelfia al encenderse. Poco después llegó la <strong>UNIVAC (1951)</strong>, la primera computadora comercial.</p>
+                        <p class="mt-2">Pero el avance más importante fue conceptual: el <strong>concepto de programa almacenado</strong> popularizado por <strong>John von Neumann (1945)</strong>. Antes, para reprogramar la ENIAC, mujeres ingenieras debían desconectar y volver a conectar cables manualmente durante días, como en una vieja central telefónica. Von Neumann propuso que las instrucciones (el software) y los datos debían guardarse en la misma memoria electrónica.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Impacto</h4>
+                        <p>El salto a la electrónica sin partes móviles (tubos de vacío) otorgó una velocidad sin precedentes, y la <strong>Arquitectura de Von Neumann</strong> separó definitivamente el hardware del software. Ya no había que reconstruir la máquina para cada tarea; bastaba con cambiar el programa.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. La Segunda Generación -->
+        <div class="timeline-item right">
+            <div class="content border-t-4">
+                <span class="inline-block py-1 px-3 rounded-full bg-green-100 text-green-800 text-xs font-bold mb-4">Etapa 4: Fines de los 50s - Principios 60s</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">La Segunda Generación</h2>
+                <h3 class="text-md text-green-600 font-medium italic mb-6">El transistor: La revolución silenciosa</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Contexto histórico</h4>
+                        <p>A finales de los años 50, la Carrera Espacial exigía computadoras que pudieran caber en un cohete. Los tubos de vacío eran un callejón sin salida: eran grandes, frágiles, se quemaban como focos y generaban un calor infernal.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-green-300">
+                        <h4 class="text-green-700"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Tecnología clave</h4>
+                        <p>La invención del <strong>transistor (1947)</strong> en los Laboratorios Bell lo cambió todo, aunque su uso masivo en computadoras define a esta Segunda Generación. Un transistor hace exactamente lo mismo que un tubo de vacío (actuar como interruptor binario de corriente), pero está hecho de un material <strong>semiconductor</strong> (como el silicio o germanio).</p>
+                        <p class="mt-2 text-xs italic bg-green-50 p-2 rounded"><strong>Metáfora didáctica:</strong> Si el tubo de vacío era una estufa enorme e ineficiente para calentar agua, el transistor era una válvula microscópica de estado sólido (sin espacio vacío ni filamentos) que regulaba la electricidad en frío y casi sin gastar energía.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>Impacto</h4>
+                        <p>Esta fue la verdadera revolución del hardware. Las computadoras pasaron de ocupar salas inmensas a tener el tamaño de un par de refrigeradores. Se volvieron <strong>confiables, baratas y energéticamente eficientes</strong>. Esto permitió que las universidades y las grandes empresas (no solo los militares) pudieran comprar computadoras. Además, propició el nacimiento de <strong>lenguajes de programación de alto nivel</strong> (como COBOL y FORTRAN), donde ya no se programaba en código máquina (ceros y unos), sino con palabras en inglés.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. La Tercera y Cuarta Generación -->
+        <div class="timeline-item left">
+            <div class="content border-t-5">
+                <span class="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-800 text-xs font-bold mb-4">Etapa 5: Años 60s, 70s y 80s</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Tercera y Cuarta Generación</h2>
+                <h3 class="text-md text-blue-600 font-medium italic mb-6">Circuitos integrados, Microprocesadores y la democratización del silicio</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Contexto histórico</h4>
+                        <p>La cultura comenzaba a rechazar la idea de que solo el gobierno o "El Gran Hermano" debía tener computadoras. Existía un deseo de empoderamiento personal. En el ámbito espacial, el programa Apolo de la NASA exigía sistemas aún más ligeros y potentes.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-blue-300">
+                        <h4 class="text-blue-700"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>Tecnología clave</h4>
+                        <ul class="list-disc pl-5 space-y-2 mt-2">
+                            <li><strong>Tercera Generación (Circuitos Integrados o "Chips" - años 60):</strong> En lugar de soldar miles de transistores individuales en una placa, ingenieros como Jack Kilby y Robert Noyce descubrieron cómo "imprimir" miles de transistores juntos en una única oblea de silicio del tamaño de una uña.</li>
+                            <li><strong>Cuarta Generación (El Microprocesador - 1971):</strong> La compañía <strong>Intel</strong> creó el <strong>Intel 4004</strong>. Agruparon no solo transistores, sino todos los componentes de la CPU (Unidad Central de Procesamiento) en <strong>un solo chip</strong>.</li>
+                        </ul>
+                        <p class="mt-3">Nace la <strong>Ley de Moore</strong>, que predecía que la cantidad de transistores en un chip se duplicaría cada dos años, reduciendo su tamaño y costo. Esto dio lugar al ecosistema de <strong>Silicon Valley</strong>. Aparecieron pioneros como <strong>Steve Jobs y Steve Wozniak (Apple)</strong> y la gigante <strong>IBM</strong>. En 1977 nace la Apple II y en 1981 la <strong>IBM PC</strong>. Pronto, gracias a sistemas operativos amigables y la Interfaz Gráfica de Usuario (GUI) impulsada por el Macintosh y Windows, cualquier persona podía usar una.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>Impacto</h4>
+                        <p>El poder de cálculo se <strong>democratizó</strong>. La computadora salió del laboratorio militar y del corporativo, para instalarse en el escritorio del hogar. La informática se convirtió en una herramienta de expresión, educación y negocio personal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. La era de la conectividad y el futuro -->
+        <div class="timeline-item right mb-12">
+            <div class="content border-t-6">
+                <span class="inline-block py-1 px-3 rounded-full bg-purple-100 text-purple-800 text-xs font-bold mb-4">Etapa 6: Fines S.XX - Siglo XXI</span>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">La era de la conectividad y el futuro</h2>
+                <h3 class="text-md text-purple-600 font-medium italic mb-6">Internet, Movilidad, IA y lo Cuántico</h3>
+                
+                <div class="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Contexto histórico</h4>
+                        <p>La globalización económica y social requería que la información fluyera sin barreras. Ya no bastaba con que cada persona tuviera una computadora; esas computadoras debían hablar entre sí.</p>
+                    </div>
+                    
+                    <div class="detail-section detail-box border-purple-300">
+                        <h4 class="text-purple-700"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>Tecnología clave y evolución</h4>
+                        <ul class="list-disc pl-5 space-y-3 mt-2">
+                            <li><strong>Internet y la Web:</strong> A partir de redes militares como ARPANET (1969), se desarrolló la <strong>World Wide Web (1989)</strong> gracias a Tim Berners-Lee. Las computadoras pasaron de ser calculadoras aisladas a nodos de la red de comunicación más grande de la historia.</li>
+                            <li><strong>Computación Móvil y la Nube:</strong> Con la llegada del <strong>iPhone (2007)</strong>, la computadora se encogió para caber en el bolsillo, con acceso continuo a Internet. Simultáneamente nació el <strong>Cloud Computing (la nube)</strong>: ya no procesamos todo en nuestro dispositivo, sino que usamos granjas de servidores remotos a través de Internet.</li>
+                            <li><strong>Inteligencia Artificial (IA):</strong> Gracias a la acumulación masiva de datos (Big Data) y chips ultra-potentes (las GPUs), algoritmos teóricos de los años 80 cobraron vida. Hoy, mediante <strong>Redes Neuronales y Aprendizaje Automático (Machine Learning)</strong>, las computadoras ya no solo siguen instrucciones rígidas, sino que identifican patrones, generan texto, imágenes y "aprenden" de sus errores.</li>
+                            <li><strong>Computación Cuántica (El Horizonte):</strong> Mientras las computadoras clásicas usan "bits" (que son 0 o 1), las computadoras cuánticas usan <strong>qubits</strong>, que, aprovechando las bizarras leyes de la mecánica cuántica (superposición y entrelazamiento), pueden ser 0, 1 o <strong>ambos al mismo tiempo</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>Impacto final</h4>
+                        <p>Hoy, la computación es ubicua; está en nuestros relojes, autos y electrodomésticos. El salto hacia la IA promete automatizar no solo el cálculo matemático, sino <strong>tareas cognitivas y creativas</strong>. Y la computación cuántica, aún en su infancia, promete resolver en segundos problemas químicos, climáticos y médicos que a nuestras mejores supercomputadoras actuales les tomaría milenios.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="text-center py-8 text-gray-500 text-sm mt-8 border-t border-gray-200">
+        <p>Línea de tiempo detallada de la Historia de la Computación.</p>
+    </footer>
+
+    <!-- Integración de Gemini API -->
+    <script>
+        const apiKey = "";
+        
+        // Contextos específicos para que Gemini sepa de qué trata cada etapa
+        const topics = [
+            "La Máquina Analítica de Babbage, Ada Lovelace y los primeros algoritmos mecánicos",
+            "La era electromecánica, Alan Turing, código Enigma y la máquina Colossus en la IIGM",
+            "La primera generación de computadoras, tubos de vacío, ENIAC y la arquitectura de Von Neumann",
+            "La invención del transistor en 1947 y su impacto en la segunda generación de computadoras",
+            "La creación de los circuitos integrados, microprocesadores Intel, la ley de Moore y la revolución del PC",
+            "El origen de Internet (ARPANET), la web, la inteligencia artificial moderna y la computación cuántica"
+        ];
+
+        // Inyectar dinámicamente los botones de IA en cada tarjeta de la línea de tiempo
+        document.querySelectorAll('.timeline-item .content').forEach((card, index) => {
+            const aiContainer = document.createElement('div');
+            aiContainer.className = 'mt-6 border-t border-gray-100 pt-4';
+            aiContainer.innerHTML = `
+                <button onclick="generateAIFact(this, '${topics[index]}')" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-2 focus:outline-none">
+                    ✨ Revelar un dato curioso con IA
+                </button>
+                <div class="ai-result hidden mt-3 p-4 bg-indigo-50 border border-indigo-100 rounded-lg text-sm text-gray-800 leading-relaxed shadow-inner"></div>
+            `;
+            // Añadirlo al final de la sección de detalles
+            card.querySelector('.space-y-4').appendChild(aiContainer);
+        });
+
+        // Función auxiliar para pausas (usada en reintentos)
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Llamada a la API de Gemini con manejo de errores y Exponential Backoff
+        async function fetchGemini(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "Eres un historiador experto en tecnología. Responde en español de forma directa y concisa (máximo 3-4 líneas) con un dato histórico fascinante, curioso y muy poco conocido sobre el tema solicitado. Usa un par de emojis relacionados para darle vida al texto." }] }
+            };
+
+            let retries = 5;
+            let delay = 1000;
+            
+            while (retries > 0) {
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`Error de red: ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates[0].content.parts[0].text;
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) throw error;
+                    await sleep(delay);
+                    delay *= 2; // Incrementar el tiempo de espera: 1s, 2s, 4s, 8s, 16s...
+                }
+            }
+        }
+
+        // Manejador del evento clic
+        async function generateAIFact(btn, topic) {
+            const resultDiv = btn.nextElementSibling;
+            
+            // UI: Estado de carga
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Consultando los archivos...`;
+            
+            resultDiv.classList.remove("hidden");
+            resultDiv.innerHTML = `<div class="animate-pulse flex space-x-2 items-center"><div class="h-2 w-2 bg-indigo-400 rounded-full"></div><div class="h-2 w-2 bg-indigo-400 rounded-full"></div><div class="h-2 w-2 bg-indigo-400 rounded-full"></div><span class="text-xs text-indigo-600 ml-2">Gemini está redactando...</span></div>`;
+
+            try {
+                // Preparar el prompt e invocar a Gemini
+                const prompt = `Cuéntame un dato fascinante y secreto o poco conocido sobre esta etapa de la computación: ${topic}.`;
+                let fact = await fetchGemini(prompt);
+                
+                // Formatear negritas básicas (de Markdown a HTML)
+                fact = fact.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // UI: Mostrar resultado exitoso
+                resultDiv.innerHTML = `<strong class="block mb-1 text-indigo-700">✨ Sabías que...</strong> ${fact}`;
+                btn.innerHTML = "✨ Generar otro dato diferente";
+            } catch (error) {
+                // UI: Manejo de errores sin usar alert()
+                resultDiv.innerHTML = `<span class="text-red-600 font-medium">❌ Ocurrió un error al consultar a la IA. Revisa tu conexión o intenta de nuevo más tarde.</span>`;
+                btn.innerHTML = "✨ Reintentar";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
